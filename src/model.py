@@ -2,56 +2,88 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-"""
-A Convolutional Variational Autoencoder
-"""
+kernel_size = 4  # (4, 4) kernel
+init_channels = 8  # initial number of filters
+image_channels = 1  # MNIST images are grayscale
+latent_dim = 16  # latent dimension for sampling
 
 
-class VAE(nn.Module):
-    def __init__(self, imgChannels=1, featureDim=32 * 20 * 20, zDim=256):
-        super(VAE, self).__init__()
+# define a Conv VAE
+class ConvVAE(nn.Module):
+    def __init__(self):
+        super(ConvVAE, self).__init__()
 
-        # Initializing the 2 convolutional layers and 2 full-connected layers for the encoder
-        self.encConv1 = nn.Conv2d(imgChannels, 16, 5)
-        self.encConv2 = nn.Conv2d(16, 32, 5)
-        self.encFC1 = nn.Linear(featureDim, zDim)
-        self.encFC2 = nn.Linear(featureDim, zDim)
+        # encoder
+        self.enc1 = nn.Conv2d(
+            in_channels=image_channels, out_channels=init_channels, kernel_size=kernel_size,
+            stride=2, padding=1
+        )
+        self.enc2 = nn.Conv2d(
+            in_channels=init_channels, out_channels=init_channels * 2, kernel_size=kernel_size,
+            stride=2, padding=1
+        )
+        self.enc3 = nn.Conv2d(
+            in_channels=init_channels * 2, out_channels=init_channels * 4, kernel_size=kernel_size,
+            stride=2, padding=1
+        )
+        self.enc4 = nn.Conv2d(
+            in_channels=init_channels * 4, out_channels=64, kernel_size=kernel_size,
+            stride=2, padding=0
+        )
+        # fully connected layers for learning representations
+        self.fc1 = nn.Linear(64, 128)
+        self.fc_mu = nn.Linear(128, latent_dim)
+        self.fc_log_var = nn.Linear(128, latent_dim)
+        self.fc2 = nn.Linear(latent_dim, 64)
+        # decoder
+        self.dec1 = nn.ConvTranspose2d(
+            in_channels=64, out_channels=init_channels * 8, kernel_size=kernel_size,
+            stride=1, padding=0
+        )
+        self.dec2 = nn.ConvTranspose2d(
+            in_channels=init_channels * 8, out_channels=init_channels * 4, kernel_size=kernel_size,
+            stride=2, padding=1
+        )
+        self.dec3 = nn.ConvTranspose2d(
+            in_channels=init_channels * 4, out_channels=init_channels * 2, kernel_size=kernel_size,
+            stride=2, padding=1
+        )
+        self.dec4 = nn.ConvTranspose2d(
+            in_channels=init_channels * 2, out_channels=image_channels, kernel_size=kernel_size,
+            stride=2, padding=1
+        )
 
-        # Initializing the fully-connected layer and 2 convolutional layers for decoder
-        self.decFC1 = nn.Linear(zDim, featureDim)
-        self.decConv1 = nn.ConvTranspose2d(32, 16, 5)
-        self.decConv2 = nn.ConvTranspose2d(16, imgChannels, 5)
-
-    def encoder(self, x):
-        # Input is fed into 2 convolutional layers sequentially
-        # The output feature map are fed into 2 fully-connected layers to predict mean (mu) and variance (logVar)
-        # Mu and logVar are used for generating middle representation z and KL divergence loss
-        x = F.relu(self.encConv1(x))
-        x = F.relu(self.encConv2(x))
-        x = x.view(-1, 32 * 20 * 20)
-        mu = self.encFC1(x)
-        logVar = self.encFC2(x)
-        return mu, logVar
-
-    def reparameterize(self, mu, logVar):
-        # Reparameterization takes in the input mu and logVar and sample the mu + std * eps
-        std = torch.exp(logVar / 2)
-        eps = torch.randn_like(std)
-        return mu + std * eps
-
-    def decoder(self, z):
-        # z is fed back into a fully-connected layers and then into two transpose convolutional layers
-        # The generated output is the same size of the original input
-        x = F.relu(self.decFC1(z))
-        x = x.view(-1, 32, 20, 20)
-        x = F.relu(self.decConv1(x))
-        x = torch.sigmoid(self.decConv2(x))
-        return x
+    def reparameterize(self, mu, log_var):
+        """
+        :param mu: mean from the encoder's latent space
+        :param log_var: log variance from the encoder's latent space
+        """
+        std = torch.exp(0.5 * log_var)  # standard deviation
+        eps = torch.randn_like(std)  # `randn_like` as we need the same size
+        sample = mu + (eps * std)  # sampling
+        return sample
 
     def forward(self, x):
-        # The entire pipeline of the VAE: encoder -> reparameterization -> decoder
-        # output, mu, and logVar are returned for loss computation
-        mu, logVar = self.encoder(x)
-        z = self.reparameterize(mu, logVar)
-        out = self.decoder(z)
-        return out, mu, logVar
+        # encoding
+        x = F.relu(self.enc1(x))
+        x = F.relu(self.enc2(x))
+        x = F.relu(self.enc3(x))
+        x = F.relu(self.enc4(x))
+        batch, _, _, _ = x.shape
+        x = F.adaptive_avg_pool2d(x, 1).reshape(batch, -1)
+        hidden = self.fc1(x)
+        # get `mu` and `log_var`
+        mu = self.fc_mu(hidden)
+        log_var = self.fc_log_var(hidden)
+        # get the latent vector through reparameterization
+        z = self.reparameterize(mu, log_var)
+        z = self.fc2(z)
+        z = z.view(-1, 64, 1, 1)
+
+        # decoding
+        x = F.relu(self.dec1(z))
+        x = F.relu(self.dec2(x))
+        x = F.relu(self.dec3(x))
+        reconstruction = torch.sigmoid(self.dec4(x))
+
+        return reconstruction, mu, log_var
