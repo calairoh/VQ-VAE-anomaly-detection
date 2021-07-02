@@ -2,7 +2,7 @@ import torch
 import torch.nn.functional as F
 
 
-def training(VAE, device, train_loader):
+def training(vae, device, train_loader):
     """
     Initialize Hyperparameters
     """
@@ -13,7 +13,7 @@ def training(VAE, device, train_loader):
     """
     Initialize the network and the Adam optimizer
     """
-    net = VAE().to(device)
+    net = vae.to(device)
     optimizer = torch.optim.Adam(net.parameters(), lr=learning_rate)
 
     """
