@@ -14,10 +14,10 @@ matplotlib.style.use('ggplot')
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 # initialize the model
-model = model.ConvVAE().to(device) 
+model = model.ConvVAE().to(device)
 # set the learning parameters
 lr = 0.001
-epochs = 100
+epochs = 10
 batch_size = 64
 optimizer = optim.Adam(model.parameters(), lr=lr)
 criterion = nn.BCELoss(reduction='sum')
