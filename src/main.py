@@ -1,24 +1,39 @@
-"""
-Import necessary libraries to create a variational autoencoder
-The code is mainly developed using the PyTorch library
-"""
-from src.model import VAE
-from src.train import training
-from src.visualization import visualization
-from dataset import *
+import torch
+import torchvision.transforms as transforms
 
-"""
-Determine if any GPUs are available
-"""
+from src.train import start
+from src.visualization import visualization
+from src.dataset import *
+
+"""CUDA"""
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-train_dataset = create_train_dataset(128)
+"""
+PARAMETERS
+"""
+lr = 0.001
+epochs = 10
+batch_size = 64
+img_width = 32
+img_height = 32
 
-d = next(iter(train_dataset))
-print(d)
+transform = transforms.Compose([
+    transforms.Resize((img_width, img_height)),
+    transforms.ToTensor(),
+])
 
-test_dataset = create_test_dataset()
+"""
+DATASET GENERATION
+"""
+trainloader = get_training_set(batch_size, transform)
+testloader = get_test_set(batch_size, transform)
 
-net = training(VAE(), device, train_dataset)
+"""
+MODEL TRAINING
+"""
+net = start(trainloader, testloader, epochs, lr, device)
 
-visualization(net, test_dataset, device)
+"""
+MODEL VISUALIZATION
+"""
+visualization(net, testloader, device)
