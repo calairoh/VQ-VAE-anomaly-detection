@@ -1,9 +1,14 @@
+import matplotlib
 import torch
 import torchvision.transforms as transforms
 
 from src.train import start
 from src.visualization import visualization
 from src.dataset import *
+
+"""MatPlotLib"""
+matplotlib.style.use('ggplot')
+matplotlib.use('TkAgg')
 
 """CUDA"""
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')

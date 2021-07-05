@@ -9,7 +9,6 @@ from utils import save_reconstructed_images, image_to_vid, save_loss_plot
 
 
 def start(trainloader, trainset, testloader, testset, epochs, lr, device):
-    matplotlib.style.use('ggplot')
 
     # initialize the model
     net = model.ConvVAE().to(device)
