@@ -1,4 +1,4 @@
-# Dataset
+# Data
 
 The first dataset is a dataset composed by leaves images available 
 on [Mendeley website](https://data.mendeley.com/datasets/hb74ynkjcn/1).
