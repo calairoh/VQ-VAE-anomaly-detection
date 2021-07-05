@@ -142,7 +142,6 @@ dmypy.json
 cython_debug/
 
 #Custom
-src/data
 outputs
 data/MNIST
 data/mendeley
