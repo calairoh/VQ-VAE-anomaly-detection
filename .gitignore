@@ -144,4 +144,5 @@ cython_debug/
 #Custom
 src/data
 outputs
-data
+data/MNIST
+data/mendeley
