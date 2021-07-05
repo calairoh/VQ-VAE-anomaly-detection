@@ -18,7 +18,7 @@ plt.ion()  # interactive mode
 
 
 class MendeleyDataset(Dataset):
-    """Face Landmarks data."""
+    """Mendeley data."""
 
     def __init__(self, csv_file, root_dir, transform=None):
         """
@@ -59,14 +59,19 @@ class MendeleyDataset(Dataset):
         """
         print('CSV creation...')
 
-        columns = ['No.', 'Name', 'Plant', 'Healthy']
+        columns = ['No.', 'Name', 'Plant', 'Status']
         df = pd.DataFrame(columns=columns)
 
-        for plant in os.walk(path):
-            for status in os.walk(os.path.join(path, plant)):
-                for img in os.walk(os.path.join(path, plant, status)):
+        count = 1
+        for plant in next(os.walk(path))[1]:
+            for status in next(os.walk(os.path.join(path, plant)))[1]:
+                for img in next(os.walk(os.path.join(path, plant, status)))[2]:
+                    df.append({'No.': count, 'Name': img, 'Plant': plant, 'Status': status}, ignore_index=True)
+
+                    count += 1
                     print(os.path.join(path, plant, status, img))
 
+        df.to_csv('../data/mendeley/mendeley.csv')
         print('CSV successfully created')
 
     @staticmethod

@@ -31,8 +31,7 @@ transform = transforms.Compose([
 """
 DATASET GENERATION
 """
-if not MendeleyDataset.isLocallyAvailable():
-    MendeleyDataset.download()
+MendeleyDataset.create_csv('../data/mendeley')
 
 trainset = get_training_set(transform)
 testset = get_test_set(transform)
