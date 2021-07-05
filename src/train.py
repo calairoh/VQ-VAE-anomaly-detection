@@ -8,7 +8,7 @@ from engine import train, validate
 from utils import save_reconstructed_images, image_to_vid, save_loss_plot
 
 
-def start(trainloader, testloader, epochs, lr, device):
+def start(trainloader, trainset, testloader, testset, epochs, lr, device):
     matplotlib.style.use('ggplot')
 
     # initialize the model
@@ -25,10 +25,10 @@ def start(trainloader, testloader, epochs, lr, device):
     for epoch in range(epochs):
         print(f"Epoch {epoch + 1} of {epochs}")
         train_epoch_loss = train(
-            net, trainloader, device, optimizer, criterion
+            net, trainloader, trainset, device, optimizer, criterion
         )
         valid_epoch_loss, recon_images = validate(
-            net, testloader, device, criterion
+            net, testloader, testset, device, criterion
         )
         train_loss.append(train_epoch_loss)
         valid_loss.append(valid_epoch_loss)

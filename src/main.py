@@ -25,13 +25,15 @@ transform = transforms.Compose([
 """
 DATASET GENERATION
 """
-trainloader = get_training_set(batch_size, transform)
-testloader = get_test_set(batch_size, transform)
+trainset = get_training_set(transform)
+testset = get_test_set(transform)
+trainloader = get_training_dataloader(trainset, batch_size)
+testloader = get_test_dataloader(testset, batch_size)
 
 """
 MODEL TRAINING
 """
-net = start(trainloader, testloader, epochs, lr, device)
+net = start(trainloader, trainset, testloader, testset, epochs, lr, device)
 
 """
 MODEL VISUALIZATION
