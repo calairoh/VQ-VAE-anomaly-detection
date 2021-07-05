@@ -144,3 +144,4 @@ cython_debug/
 #Custom
 src/data
 outputs
+data

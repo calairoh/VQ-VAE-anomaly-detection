@@ -2,6 +2,7 @@ import matplotlib
 import torch
 import torchvision.transforms as transforms
 
+from src.data.MendeleyDataset import MendeleyDataset
 from src.train import start
 from src.visualization import visualization
 from src.dataset import *
@@ -30,6 +31,9 @@ transform = transforms.Compose([
 """
 DATASET GENERATION
 """
+if not MendeleyDataset.isLocallyAvailable():
+    MendeleyDataset.download()
+
 trainset = get_training_set(transform)
 testset = get_test_set(transform)
 trainloader = get_training_dataloader(trainset, batch_size)
