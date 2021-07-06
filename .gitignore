@@ -143,5 +143,5 @@ cython_debug/
 
 #Custom
 outputs
-data/MNIST
-data/mendeley
+/data/MNIST
+/data/mendeley/
