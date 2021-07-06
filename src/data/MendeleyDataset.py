@@ -36,7 +36,14 @@ class MendeleyPlant(Enum):
 class MendeleyDataset(Dataset):
     """Mendeley data."""
 
-    def __init__(self, csv_file, root_dir, transform=None, healthy_only=False, plants=list(MendeleyPlant)):
+    def __init__(self,
+                 csv_file,
+                 root_dir,
+                 transform=None,
+                 healthy_only=False,
+                 plants=list(MendeleyPlant),
+                 validation=False,
+                 validationSplit=0):
         """
         Args:
             csv_file (string): Path to the csv file with annotations.
@@ -49,6 +56,8 @@ class MendeleyDataset(Dataset):
         self.transform = transform
         self.healthy_only = healthy_only
         self.plants = plants
+        self.validation = validation
+        self.validationSplit = validationSplit
 
         if healthy_only:
             self.df = self.df[self.df.Status == 'healthy']
@@ -56,6 +65,11 @@ class MendeleyDataset(Dataset):
         diff = list(set(list(MendeleyPlant)) - set(plants))
         for plant in diff:
             self.df = self.df[~(self.df.PlantCode == plant.value)]
+
+        if self.validation:
+            self.df = self.df.tail(self.validationSplit * len(self.df))
+        else:
+            self.df = self.df.head((1 - self.validationSplit) * len(self.df))
 
     def __len__(self):
         return len(self.df)
@@ -65,12 +79,15 @@ class MendeleyDataset(Dataset):
             idx = idx.tolist()
 
         img_name = os.path.join(self.root_dir,
-                                self.df.iloc[idx, 0])
+                                self.df.iloc[idx, 2],
+                                self.df.iloc[idx, 4],
+                                self.df.iloc[idx, 1])
         image = io.imread(img_name)
-        landmarks = self.df.iloc[idx, 1:]
-        landmarks = np.array([landmarks])
-        landmarks = landmarks.astype('float').reshape(-1, 2)
-        sample = {'image': image, 'landmarks': landmarks}
+        #landmarks = self.df.iloc[idx, 1:]
+        #landmarks = np.array([landmarks])
+        #landmarks = landmarks.astype('float').reshape(-1, 2)
+        #sample = {'image': image, 'landmarks': landmarks}
+        sample = image
 
         if self.transform:
             sample = self.transform(sample)
