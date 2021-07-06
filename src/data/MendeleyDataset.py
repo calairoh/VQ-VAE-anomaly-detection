@@ -51,11 +51,11 @@ class MendeleyDataset(Dataset):
         self.plants = plants
 
         if healthy_only:
-            self.df = self.df[self.df.Healthy == 'healthy']
+            self.df = self.df[self.df.Status == 'healthy']
 
-        diff = list(set(plants) - set(list(MendeleyPlant)))
+        diff = list(set(list(MendeleyPlant)) - set(plants))
         for plant in diff:
-            self.df = self.df[~(self.df.Plant == plant)]
+            self.df = self.df[~(self.df.PlantCode == plant.value)]
 
     def __len__(self):
         return len(self.df)

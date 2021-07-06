@@ -2,7 +2,7 @@ import matplotlib
 import torch
 import torchvision.transforms as transforms
 
-from src.data.MendeleyDataset import MendeleyDataset
+from src.data.MendeleyDataset import MendeleyDataset, MendeleyPlant
 from src.train import start
 from src.visualization import visualization
 from src.dataset import *
@@ -35,7 +35,9 @@ if not MendeleyDataset.csvExists():
     MendeleyDataset.create_csv('../data/mendeley')
 
 mendeleyDataset = MendeleyDataset(csv_file='../data/mendeley/mendeley.csv',
-                                  root_dir='../data/mendeley')
+                                  root_dir='../data/mendeley',
+                                  healthy_only=True,
+                                  plants=list([MendeleyPlant.ALSTONIA_SCHOLARIS]))
 
 trainset = get_training_set(transform)
 testset = get_test_set(transform)
