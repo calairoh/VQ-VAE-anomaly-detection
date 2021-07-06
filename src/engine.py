@@ -1,5 +1,6 @@
 from tqdm import tqdm
 import torch
+import numpy as np
 
 
 def final_loss(bce_loss, mu, logvar):
@@ -25,8 +26,8 @@ def train(model, dataloader, dataset, device, optimizer, criterion):
         data = data[0]
         data = data.to(device)
         optimizer.zero_grad()
-        reconstruction, mu, logvar = model(data)
-        bce_loss = criterion(reconstruction, data)
+        reconstruction, mu, logvar = model(data[None, ...])
+        bce_loss = criterion(reconstruction, data[None, ...])
         loss = final_loss(bce_loss, mu, logvar)
         loss.backward()
         running_loss += loss.item()
@@ -44,8 +45,8 @@ def validate(model, dataloader, dataset, device, criterion):
             counter += 1
             data = data[0]
             data = data.to(device)
-            reconstruction, mu, logvar = model(data)
-            bce_loss = criterion(reconstruction, data)
+            reconstruction, mu, logvar = model(data[None, ...])
+            bce_loss = criterion(reconstruction, data[None, ...])
             loss = final_loss(bce_loss, mu, logvar)
             running_loss += loss.item()
 

@@ -8,10 +8,23 @@ from engine import train, validate
 from utils import save_reconstructed_images, image_to_vid, save_loss_plot
 
 
-def start(trainloader, trainset, testloader, testset, epochs, lr, device):
+def start(trainloader,
+          trainset,
+          testloader,
+          testset,
+          epochs,
+          lr,
+          device,
+          kernel_size,
+          init_channels,
+          image_channels,
+          latent_dim):
 
     # initialize the model
-    net = model.ConvVAE().to(device)
+    net = model.ConvVAE(kernel_size=kernel_size,
+                        init_channels=init_channels,
+                        image_channels=image_channels,
+                        latent_dim=latent_dim).to(device)
     # set the learning parameters
 
     optimizer = optim.Adam(net.parameters(), lr=lr)

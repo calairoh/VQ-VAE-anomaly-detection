@@ -20,13 +20,21 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 """
 PARAMETERS
 """
+# DATASET
 validationSplit = 0.2
-
-lr = 0.001
-epochs = 10
 batch_size = 4
-img_width = 128
-img_height = 128
+img_width = 32
+img_height = 32
+
+# MODEL
+kernel_size = 4
+init_channels = 4
+image_channels = 3
+latent_dim = 16
+
+# TRAINING
+lr = 0.001
+epochs = 1
 
 transform = transforms.Compose([
     transforms.Resize((img_width, img_height)),
@@ -55,22 +63,22 @@ mendeleyDatasetTest = MendeleyDataset(csv_file='../data/mendeley/mendeley.csv',
                                       validationSplit=validationSplit,
                                       transform=transform)
 
-fig = plt.figure()
+#fig = plt.figure()
 
-for i in range(len(mendeleyDatasetTrain)):
-    sample = mendeleyDatasetTrain[i]
-
-    sample = np.transpose(sample, (1, 2, 0))
-
-    ax = plt.subplot(1, 4, i + 1)
-    plt.tight_layout()
-    ax.set_title('Sample #{}'.format(i))
-    ax.axis('off')
-    plt.imshow(sample)
-
-    if i == 3:
-        plt.show()
-        break
+# for i in range(len(mendeleyDatasetTrain)):
+#     sample = mendeleyDatasetTrain[i]
+#
+#     sample = np.transpose(sample, (1, 2, 0))
+#
+#     ax = plt.subplot(1, 4, i + 1)
+#     plt.tight_layout()
+#     ax.set_title('Sample #{}'.format(i))
+#     ax.axis('off')
+#     plt.imshow(sample)
+#
+#     if i == 3:
+#         plt.show()
+#         break
 
 trainloader = get_training_dataloader(mendeleyDatasetTrain, batch_size)
 testloader = get_test_dataloader(mendeleyDatasetTest, batch_size)
@@ -78,7 +86,17 @@ testloader = get_test_dataloader(mendeleyDatasetTest, batch_size)
 """
 MODEL TRAINING
 """
-net = start(trainloader, mendeleyDatasetTrain, testloader, mendeleyDatasetTest, epochs, lr, device)
+net = start(trainloader=trainloader,
+            trainset=mendeleyDatasetTrain,
+            testloader=testloader,
+            testset=mendeleyDatasetTest,
+            epochs=epochs,
+            lr=lr,
+            device=device,
+            kernel_size=kernel_size,
+            init_channels=init_channels,
+            image_channels=image_channels,
+            latent_dim=latent_dim)
 
 """
 MODEL VISUALIZATION
