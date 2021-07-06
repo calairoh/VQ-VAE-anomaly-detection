@@ -11,6 +11,7 @@ import wget as wget
 from skimage import io
 from torch.utils.data import Dataset
 from enum import Enum
+from PIL import Image
 
 # Ignore warnings
 warnings.filterwarnings("ignore")
@@ -67,9 +68,9 @@ class MendeleyDataset(Dataset):
             self.df = self.df[~(self.df.PlantCode == plant.value)]
 
         if self.validation:
-            self.df = self.df.tail(self.validationSplit * len(self.df))
+            self.df = self.df.tail(int(self.validationSplit * len(self.df)))
         else:
-            self.df = self.df.head((1 - self.validationSplit) * len(self.df))
+            self.df = self.df.head(int((1 - self.validationSplit) * len(self.df)))
 
     def __len__(self):
         return len(self.df)
@@ -82,17 +83,18 @@ class MendeleyDataset(Dataset):
                                 self.df.iloc[idx, 2],
                                 self.df.iloc[idx, 4],
                                 self.df.iloc[idx, 1])
-        image = io.imread(img_name)
+
+        image = Image.open(img_name)
+
         #landmarks = self.df.iloc[idx, 1:]
         #landmarks = np.array([landmarks])
         #landmarks = landmarks.astype('float').reshape(-1, 2)
         #sample = {'image': image, 'landmarks': landmarks}
-        sample = image
 
         if self.transform:
-            sample = self.transform(sample)
+            image = self.transform(image)
 
-        return sample
+        return image
 
     @staticmethod
     def csvExists():

@@ -12,6 +12,7 @@ from src.dataset import *
 """MatPlotLib"""
 matplotlib.style.use('ggplot')
 matplotlib.use('TkAgg')
+plt.ion()
 
 """CUDA"""
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -23,9 +24,9 @@ validationSplit = 0.2
 
 lr = 0.001
 epochs = 10
-batch_size = 64
-img_width = 32
-img_height = 32
+batch_size = 4
+img_width = 128
+img_height = 128
 
 transform = transforms.Compose([
     transforms.Resize((img_width, img_height)),
@@ -43,14 +44,33 @@ mendeleyDatasetTrain = MendeleyDataset(csv_file='../data/mendeley/mendeley.csv',
                                        healthy_only=True,
                                        plants=list([MendeleyPlant.ALSTONIA_SCHOLARIS]),
                                        validation=False,
-                                       validationSplit=validationSplit)
+                                       validationSplit=validationSplit,
+                                       transform=transform)
 
 mendeleyDatasetTest = MendeleyDataset(csv_file='../data/mendeley/mendeley.csv',
                                       root_dir='../data/mendeley',
                                       healthy_only=True,
                                       plants=list([MendeleyPlant.ALSTONIA_SCHOLARIS]),
                                       validation=True,
-                                      validationSplit=validationSplit)
+                                      validationSplit=validationSplit,
+                                      transform=transform)
+
+fig = plt.figure()
+
+for i in range(len(mendeleyDatasetTrain)):
+    sample = mendeleyDatasetTrain[i]
+
+    sample = np.transpose(sample, (1, 2, 0))
+
+    ax = plt.subplot(1, 4, i + 1)
+    plt.tight_layout()
+    ax.set_title('Sample #{}'.format(i))
+    ax.axis('off')
+    plt.imshow(sample)
+
+    if i == 3:
+        plt.show()
+        break
 
 trainloader = get_training_dataloader(mendeleyDatasetTrain, batch_size)
 testloader = get_test_dataloader(mendeleyDatasetTest, batch_size)
