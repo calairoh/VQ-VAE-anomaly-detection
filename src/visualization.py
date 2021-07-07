@@ -8,8 +8,7 @@ import torch
 def visualization(net, test_loader, device):
     net.eval()
     with torch.no_grad():
-        for data in random.sample(list(test_loader), 5):
-            imgs, _ = data
+        for imgs in random.sample(list(test_loader), 1):
             imgs = imgs.to(device)
             img = np.transpose(imgs[0].cpu().numpy(), [1, 2, 0])
             plt.subplot(121)
