@@ -129,7 +129,7 @@ class ConvVAE(nn.Module):
         x = F.relu(self.dec2(x))
         x = F.relu(self.dec3(x))
         x = F.relu(self.dec4(x))
-        x = F.relu(self.dec5(x))
+        #x = F.relu(self.dec5(x))
         reconstruction = torch.sigmoid(self.dec6(x))
 
         return reconstruction, mu, log_var
