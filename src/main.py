@@ -6,8 +6,8 @@ import numpy as np
 
 from src.data.MendeleyDataset import MendeleyDataset, MendeleyPlant
 from src.train import start
-from src.visualization import visualization
 from src.dataset import *
+from src.models import BaseModel, FaceGenModel
 
 """MatPlotLib"""
 matplotlib.style.use('ggplot')
@@ -21,23 +21,29 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 PARAMETERS
 """
 # DATASET
-validationSplit = 0.2
+validationSplit = 0.1
 batch_size = 4
-img_width = 64
-img_height = 64
+img_width = 128
+img_height = 128
 
-# MODEL
-kernel_size = 4
-init_channels = 4
+# BASE MODEL
+kernel_size_base = 4
+init_channels_base = 2
 image_channels = 3
-latent_dim = 16
+latent_dim = 4
+
+# FACE GEN MODEL
+kernel_size_face_gen = 4
+init_channels_face_gen = 16
+stride_face_gen = 1
+padding_face_gen = 0
 
 # TRAINING
-lr = 0.001
-epochs = 1
+lr = 0.01
+epochs = 20
 
 transform = transforms.Compose([
-    transforms.Resize((img_width, img_height)),
+    transforms.Resize((img_height, img_width)),
     transforms.ToTensor(),
 ])
 
@@ -64,22 +70,22 @@ mendeleyDatasetTest = MendeleyDataset(csv_file='../data/mendeley/mendeley.csv',
                                       transform=transform)
 
 # Example images
-fig = plt.figure()
-
-for i in range(len(mendeleyDatasetTrain)):
-    sample = mendeleyDatasetTrain[i]
-
-    sample = np.transpose(sample, (1, 2, 0))
-
-    ax = plt.subplot(1, 4, i + 1)
-    plt.tight_layout()
-    ax.set_title('Sample #{}'.format(i))
-    ax.axis('off')
-    plt.imshow(sample)
-
-    if i == 3:
-        plt.show()
-        break
+# fig = plt.figure()
+#
+# for i in range(len(mendeleyDatasetTrain)):
+#     sample = mendeleyDatasetTrain[i]
+#
+#     sample = np.transpose(sample, (1, 2, 0))
+#
+#     ax = plt.subplot(1, 4, i + 1)
+#     plt.tight_layout()
+#     ax.set_title('Sample #{}'.format(i))
+#     ax.axis('off')
+#     plt.imshow(sample)
+#
+#     if i == 3:
+#         plt.show()
+#         break
 
 trainloader = get_training_dataloader(mendeleyDatasetTrain, batch_size)
 testloader = get_test_dataloader(mendeleyDatasetTest, batch_size)
@@ -87,19 +93,29 @@ testloader = get_test_dataloader(mendeleyDatasetTest, batch_size)
 """
 MODEL TRAINING
 """
-net = start(trainloader=trainloader,
+
+# initialize the model
+baseModel = BaseModel.ConvVAE(kernel_size=kernel_size_base,
+                              init_channels=init_channels_base,
+                              image_channels=image_channels,
+                              latent_dim=latent_dim).to(device)
+
+faceGenModel = FaceGenModel.ConvVAE(kernel_size=kernel_size_face_gen,
+                                    init_channels=init_channels_face_gen,
+                                    stride=stride_face_gen,
+                                    padding=padding_face_gen,
+                                    image_channels=image_channels)
+
+net = start(net=faceGenModel,
+            trainloader=trainloader,
             trainset=mendeleyDatasetTrain,
             testloader=testloader,
             testset=mendeleyDatasetTest,
             epochs=epochs,
             lr=lr,
-            device=device,
-            kernel_size=kernel_size,
-            init_channels=init_channels,
-            image_channels=image_channels,
-            latent_dim=latent_dim)
+            device=device)
 
 """
 MODEL VISUALIZATION
 """
-visualization(net, testloader, device)
+# visualization(net, testloader, device)

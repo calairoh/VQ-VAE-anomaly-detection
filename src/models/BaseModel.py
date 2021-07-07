@@ -42,11 +42,11 @@ class ConvVAE(nn.Module):
             out_channels=init_channels * 16,
             kernel_size=kernel_size,
             stride=2,
-            padding=0
+            padding=1
         )
 
         # fully connected layers for learning representations
-        self.fc1 = nn.Linear(64, 128)
+        self.fc1 = nn.Linear(init_channels * 16, 128)
         self.fc_mu = nn.Linear(128, latent_dim)
         self.fc_log_var = nn.Linear(128, latent_dim)
         self.fc2 = nn.Linear(latent_dim, 64)
@@ -82,6 +82,13 @@ class ConvVAE(nn.Module):
         )
         self.dec5 = nn.ConvTranspose2d(
             in_channels=init_channels,
+            out_channels=init_channels,
+            kernel_size=kernel_size,
+            stride=2,
+            padding=1
+        )
+        self.dec6 = nn.ConvTranspose2d(
+            in_channels=init_channels,
             out_channels=image_channels,
             kernel_size=kernel_size,
             stride=2,
@@ -105,6 +112,7 @@ class ConvVAE(nn.Module):
         x = F.relu(self.enc3(x))
         x = F.relu(self.enc4(x))
         x = F.relu(self.enc5(x))
+
         batch, _, _, _ = x.shape
         x = F.adaptive_avg_pool2d(x, 1).reshape(batch, -1)
         hidden = self.fc1(x)
@@ -121,6 +129,7 @@ class ConvVAE(nn.Module):
         x = F.relu(self.dec2(x))
         x = F.relu(self.dec3(x))
         x = F.relu(self.dec4(x))
-        reconstruction = torch.sigmoid(self.dec5(x))
+        x = F.relu(self.dec5(x))
+        reconstruction = torch.sigmoid(self.dec6(x))
 
         return reconstruction, mu, log_var
