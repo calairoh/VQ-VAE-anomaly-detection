@@ -2,6 +2,7 @@ import matplotlib
 import torch.nn as nn
 import torch.optim as optim
 from torchvision.utils import make_grid
+from torchsummary import summary
 
 import model
 from engine import train, validate
@@ -25,8 +26,11 @@ def start(trainloader,
                         init_channels=init_channels,
                         image_channels=image_channels,
                         latent_dim=latent_dim).to(device)
-    # set the learning parameters
 
+    # summary
+    summary(net, (3, 64, 64))
+
+    # set the learning parameters
     optimizer = optim.Adam(net.parameters(), lr=lr)
     criterion = nn.BCELoss(reduction='sum')
     # a list to save all the reconstructed images in PyTorch grid format

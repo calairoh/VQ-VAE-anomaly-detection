@@ -23,8 +23,8 @@ PARAMETERS
 # DATASET
 validationSplit = 0.2
 batch_size = 4
-img_width = 32
-img_height = 32
+img_width = 64
+img_height = 64
 
 # MODEL
 kernel_size = 4
@@ -63,22 +63,23 @@ mendeleyDatasetTest = MendeleyDataset(csv_file='../data/mendeley/mendeley.csv',
                                       validationSplit=validationSplit,
                                       transform=transform)
 
-#fig = plt.figure()
+# Example images
+fig = plt.figure()
 
-# for i in range(len(mendeleyDatasetTrain)):
-#     sample = mendeleyDatasetTrain[i]
-#
-#     sample = np.transpose(sample, (1, 2, 0))
-#
-#     ax = plt.subplot(1, 4, i + 1)
-#     plt.tight_layout()
-#     ax.set_title('Sample #{}'.format(i))
-#     ax.axis('off')
-#     plt.imshow(sample)
-#
-#     if i == 3:
-#         plt.show()
-#         break
+for i in range(len(mendeleyDatasetTrain)):
+    sample = mendeleyDatasetTrain[i]
+
+    sample = np.transpose(sample, (1, 2, 0))
+
+    ax = plt.subplot(1, 4, i + 1)
+    plt.tight_layout()
+    ax.set_title('Sample #{}'.format(i))
+    ax.axis('off')
+    plt.imshow(sample)
+
+    if i == 3:
+        plt.show()
+        break
 
 trainloader = get_training_dataloader(mendeleyDatasetTrain, batch_size)
 testloader = get_test_dataloader(mendeleyDatasetTest, batch_size)

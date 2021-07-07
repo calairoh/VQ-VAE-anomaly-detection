@@ -1,6 +1,5 @@
-from tqdm import tqdm
 import torch
-import numpy as np
+from tqdm import tqdm
 
 
 def final_loss(bce_loss, mu, logvar):
