@@ -52,5 +52,6 @@ def validate(model, dataloader, dataset, device, criterion):
             # save the last batch input and output of every epoch
             if i == int(len(dataloader) / dataloader.batch_size) - 1:
                 recon_images = reconstruction
+                original_images = data
     val_loss = running_loss / counter
-    return val_loss, recon_images
+    return val_loss, recon_images, original_images

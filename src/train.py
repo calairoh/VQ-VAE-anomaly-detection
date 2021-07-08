@@ -5,7 +5,7 @@ from torchsummary import summary
 
 from src.models import BaseModel
 from engine import train, validate
-from utils import save_reconstructed_images, image_to_vid, save_loss_plot
+from utils import save_reconstructed_images, image_to_vid, save_loss_plot, save_original_images
 
 
 def start(net,
@@ -33,13 +33,14 @@ def start(net,
         train_epoch_loss = train(
             net, trainloader, trainset, device, optimizer, criterion
         )
-        valid_epoch_loss, recon_images = validate(
+        valid_epoch_loss, recon_images, original_images = validate(
             net, testloader, testset, device, criterion
         )
         train_loss.append(train_epoch_loss)
         valid_loss.append(valid_epoch_loss)
         # save the reconstructed images from the validation loop
         save_reconstructed_images(recon_images, epoch + 1)
+        save_original_images(original_images, epoch + 1)
         # convert the reconstructed images to PyTorch image grid format
         image_grid = make_grid(recon_images.detach().cpu())
         grid_images.append(image_grid)

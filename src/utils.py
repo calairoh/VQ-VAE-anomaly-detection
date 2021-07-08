@@ -16,6 +16,10 @@ def save_reconstructed_images(recon_images, epoch):
     save_image(recon_images.cpu(), f"../outputs/output{epoch}.jpg")
 
 
+def save_original_images(original_images, epoch):
+    save_image(original_images.cpu(), f"../outputs/output{epoch}-or.jpg")
+
+
 def save_loss_plot(train_loss, valid_loss):
     # loss plots
     plt.figure(figsize=(10, 7))
