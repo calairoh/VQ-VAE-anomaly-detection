@@ -5,9 +5,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from src.data.MendeleyDataset import MendeleyDataset, MendeleyPlant
+from src.data.PlantVillageDataset import PlantVillage
 from src.train import start
 from src.dataset import *
-from src.models import BaseModel, FaceGenModel, PoolBaseModel, BatchNormBaseModel
+from src.models import BaseModel, PoolBaseModel, BatchNormBaseModel
 
 """MatPlotLib"""
 matplotlib.style.use('ggplot')
@@ -25,7 +26,6 @@ validationSplit = 0.1
 batch_size = 1
 img_width = 64
 img_height = 64
-
 
 # FACE GEN MODEL
 kernel_size_face_gen = 4
@@ -45,45 +45,64 @@ transform = transforms.Compose([
 """
 DATASET GENERATION
 """
-if not MendeleyDataset.csvExists():
-    MendeleyDataset.create_csv('../data/mendeley')
+# Mendeley dataset
+# if not MendeleyDataset.csvExists():
+#     MendeleyDataset.create_csv('../data/mendeley')
+#
+# mendeleyDatasetTrain = MendeleyDataset(csv_file='../data/mendeley/mendeley.csv',
+#                                        root_dir='../data/mendeley',
+#                                        healthy_only=True,
+#                                        plants=list([MendeleyPlant.ALSTONIA_SCHOLARIS]),
+#                                        validation=False,
+#                                        validationSplit=validationSplit,
+#                                        transform=transform)
+#
+# mendeleyDatasetTest = MendeleyDataset(csv_file='../data/mendeley/mendeley.csv',
+#                                       root_dir='../data/mendeley',
+#                                       healthy_only=True,
+#                                       plants=list([MendeleyPlant.ALSTONIA_SCHOLARIS]),
+#                                       validation=True,
+#                                       validationSplit=validationSplit,
+#                                       transform=transform)
 
-mendeleyDatasetTrain = MendeleyDataset(csv_file='../data/mendeley/mendeley.csv',
-                                       root_dir='../data/mendeley',
-                                       healthy_only=True,
-                                       plants=list([MendeleyPlant.ALSTONIA_SCHOLARIS]),
-                                       validation=False,
-                                       validationSplit=validationSplit,
-                                       transform=transform)
+# Plant Village dataset
+if not PlantVillage.csvExists():
+    PlantVillage.create_csv("../data/plantvillage/cherry")
 
-mendeleyDatasetTest = MendeleyDataset(csv_file='../data/mendeley/mendeley.csv',
-                                      root_dir='../data/mendeley',
-                                      healthy_only=True,
-                                      plants=list([MendeleyPlant.ALSTONIA_SCHOLARIS]),
-                                      validation=True,
-                                      validationSplit=validationSplit,
-                                      transform=transform)
+plantVillageTrain = PlantVillage(csv_file='../data/plantvillage/cherry/cherry.csv',
+                                 root_dir='../data/plantvillage/cherry',
+                                 healthy_only=True,
+                                 validation=False,
+                                 validationSplit=validationSplit,
+                                 transform=transform)
+
+plantVillageTest = PlantVillage(csv_file='../data/plantvillage/cherry/cherry.csv',
+                                root_dir='../data/plantvillage/cherry',
+                                healthy_only=True,
+                                validation=True,
+                                validationSplit=validationSplit,
+                                transform=transform)
 
 # Example images
-# fig = plt.figure()
-#
-# for i in range(len(mendeleyDatasetTrain)):
-#     sample = mendeleyDatasetTrain[i]
-#
-#     sample = np.transpose(sample, (1, 2, 0))
-#
-#     ax = plt.subplot(1, 4, i + 1)
-#     plt.tight_layout()
-#     ax.set_title('Sample #{}'.format(i))
-#     ax.axis('off')
-#     plt.imshow(sample)
-#
-#     if i == 3:
-#         plt.show()
-#         break
+fig = plt.figure()
 
-trainloader = get_training_dataloader(mendeleyDatasetTrain, batch_size)
-testloader = get_test_dataloader(mendeleyDatasetTest, batch_size)
+for i in range(len(plantVillageTrain)):
+    sample = plantVillageTrain[i]
+
+    sample = np.transpose(sample, (1, 2, 0))
+
+    ax = plt.subplot(1, 4, i + 1)
+    plt.tight_layout()
+    ax.set_title('Sample #{}'.format(i))
+    ax.axis('off')
+    plt.imshow(sample)
+
+    if i == 3:
+        plt.show()
+        break
+
+trainloader = get_training_dataloader(plantVillageTrain, batch_size)
+testloader = get_test_dataloader(plantVillageTest, batch_size)
 
 """
 MODEL TRAINING
@@ -98,9 +117,9 @@ batchNormBaseModel = BatchNormBaseModel.ConvVAE()
 
 net = start(net=baseModel,
             trainloader=trainloader,
-            trainset=mendeleyDatasetTrain,
+            trainset=plantVillageTrain,
             testloader=testloader,
-            testset=mendeleyDatasetTest,
+            testset=plantVillageTest,
             epochs=epochs,
             lr=lr,
             device=device)
