@@ -18,7 +18,7 @@ def start(net,
           device):
 
     # summary
-    summary(net, (3, 128, 128))
+    summary(net, (3, 64, 64))
 
     # set the learning parameters
     optimizer = optim.Adam(net.parameters(), lr=lr)

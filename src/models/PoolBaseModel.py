@@ -8,42 +8,27 @@ class ConvVAE(nn.Module):
     def __init__(self):
         super(ConvVAE, self).__init__()
 
-        init_channels = 8
-        latent_dim = 16
+        init_channels = 4
+        latent_dim = 8
         image_channels = 3
 
         # encoder
         self.enc1 = nn.Conv2d(
             in_channels=image_channels,
-            out_channels=init_channels,
-            kernel_size=3
-        )
-        self.enc2 = nn.Conv2d(
-            in_channels=init_channels,
-            out_channels=init_channels * 2,
-            kernel_size=3
-        )
-        self.enc3 = nn.Conv2d(
-            in_channels=init_channels * 2,
             out_channels=init_channels * 4,
             kernel_size=3
         )
-        self.enc4 = nn.Conv2d(
+        self.enc2 = nn.Conv2d(
             in_channels=init_channels * 4,
             out_channels=init_channels * 8,
-            kernel_size=3
-        )
-        self.enc5 = nn.Conv2d(
-            in_channels=init_channels * 8,
-            out_channels=init_channels * 16,
             kernel_size=3
         )
         self.maxPool2d = nn.MaxPool2d(kernel_size=2)
 
         # fully connected layers for learning representations
-        self.fc1 = nn.Linear(init_channels * 8, 32)
-        self.fc_mu = nn.Linear(32, latent_dim)
-        self.fc_log_var = nn.Linear(32, latent_dim)
+        self.fc1 = nn.Linear(init_channels * 8, 16)
+        self.fc_mu = nn.Linear(16, latent_dim)
+        self.fc_log_var = nn.Linear(16, latent_dim)
         self.fc2 = nn.Linear(latent_dim, 64)
 
         # decoder
@@ -77,18 +62,19 @@ class ConvVAE(nn.Module):
         )
         self.dec5 = nn.ConvTranspose2d(
             in_channels=init_channels,
-            out_channels=init_channels,
+            out_channels=image_channels,
             kernel_size=4,
             stride=2,
             padding=1
         )
         self.dec6 = nn.ConvTranspose2d(
             in_channels=init_channels,
-            out_channels=image_channels,
+            out_channels=3,
             kernel_size=4,
             stride=2,
             padding=1
         )
+        self.maxPool2dTransp = nn.MaxUnpool2d(kernel_size=2)
 
     def reparameterize(self, mu, log_var):
         """
@@ -105,10 +91,10 @@ class ConvVAE(nn.Module):
         x = F.relu(self.enc1(x))
         x = self.maxPool2d(x)
         x = F.relu(self.enc2(x))
-        x = self.maxPool2d(x)
-        x = F.relu(self.enc3(x))
-        x = self.maxPool2d(x)
-        x = F.relu(self.enc4(x))
+        #x = self.maxPool2d(x)
+        #x = F.relu(self.enc3(x))
+        #x = self.maxPool2d(x)
+        #x = F.relu(self.enc4(x))
         #x = self.maxPool2d(x)
         #x = F.relu(self.enc5(x))
 
@@ -125,10 +111,14 @@ class ConvVAE(nn.Module):
 
         # decoding
         x = F.relu(self.dec1(z))
+        #x = self.maxPool2dTransp(x)
         x = F.relu(self.dec2(x))
+        #x = self.maxPool2dTransp(x)
         x = F.relu(self.dec3(x))
+        #x = self.maxPool2dTransp(x)
         x = F.relu(self.dec4(x))
-        x = F.relu(self.dec5(x))
-        reconstruction = torch.sigmoid(self.dec6(x))
+        #x = self.maxPool2dTransp(x)
+        #x = F.relu(self.dec5(x))
+        reconstruction = torch.sigmoid(self.dec5(x))
 
         return reconstruction, mu, log_var

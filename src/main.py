@@ -7,7 +7,7 @@ import numpy as np
 from src.data.MendeleyDataset import MendeleyDataset, MendeleyPlant
 from src.train import start
 from src.dataset import *
-from src.models import BaseModel, FaceGenModel, PoolBaseModel
+from src.models import BaseModel, FaceGenModel, PoolBaseModel, BatchNormBaseModel
 
 """MatPlotLib"""
 matplotlib.style.use('ggplot')
@@ -22,15 +22,10 @@ PARAMETERS
 """
 # DATASET
 validationSplit = 0.1
-batch_size = 4
+batch_size = 1
 img_width = 64
 img_height = 64
 
-# BASE MODEL
-kernel_size_base = 4
-init_channels_base = 4
-image_channels = 3
-latent_dim = 16
 
 # FACE GEN MODEL
 kernel_size_face_gen = 4
@@ -39,13 +34,11 @@ stride_face_gen = 1
 padding_face_gen = 0
 
 # TRAINING
-lr = 0.01
-epochs = 50
+lr = 0.005
+epochs = 100
 
 transform = transforms.Compose([
     transforms.Resize((img_height, img_width)),
-    transforms.RandomHorizontalFlip(),
-    transforms.RandomVerticalFlip(),
     transforms.ToTensor(),
 ])
 
@@ -97,20 +90,13 @@ MODEL TRAINING
 """
 
 # initialize the model
-baseModel = BaseModel.ConvVAE(kernel_size=kernel_size_base,
-                              init_channels=init_channels_base,
-                              image_channels=image_channels,
-                              latent_dim=latent_dim).to(device)
+baseModel = BaseModel.ConvVAE().to(device)
 
 poolBaseModel = PoolBaseModel.ConvVAE()
 
-faceGenModel = FaceGenModel.ConvVAE(kernel_size=kernel_size_face_gen,
-                                    init_channels=init_channels_face_gen,
-                                    stride=stride_face_gen,
-                                    padding=padding_face_gen,
-                                    image_channels=image_channels)
+batchNormBaseModel = BatchNormBaseModel.ConvVAE()
 
-net = start(net=poolBaseModel,
+net = start(net=baseModel,
             trainloader=trainloader,
             trainset=mendeleyDatasetTrain,
             testloader=testloader,
