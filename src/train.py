@@ -21,7 +21,7 @@ def start(net,
     summary(net, (3, 64, 64))
 
     # set the learning parameters
-    optimizer = optim.Adam(net.parameters(), lr=lr)
+    optimizer = optim.Adadelta(net.parameters())
     criterion = nn.BCELoss(reduction='sum')
     # a list to save all the reconstructed images in PyTorch grid format
     grid_images = []

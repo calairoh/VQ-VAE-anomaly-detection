@@ -8,7 +8,7 @@ from src.data.MendeleyDataset import MendeleyDataset, MendeleyPlant
 from src.data.PlantVillageDataset import PlantVillage
 from src.train import start
 from src.dataset import *
-from src.models import BaseModel, PoolBaseModel, BatchNormBaseModel
+from src.models import BaseModel, PoolBaseModel, BatchNormBaseModel, FaceGenModel
 
 """MatPlotLib"""
 matplotlib.style.use('ggplot')
@@ -23,7 +23,7 @@ PARAMETERS
 """
 # DATASET
 validationSplit = 0.1
-batch_size = 1
+batch_size = 4
 img_width = 64
 img_height = 64
 
@@ -35,10 +35,11 @@ padding_face_gen = 0
 
 # TRAINING
 lr = 0.005
-epochs = 100
+epochs = 50
 
 transform = transforms.Compose([
     transforms.Resize((img_height, img_width)),
+    transforms.RandomHorizontalFlip(),
     transforms.ToTensor(),
 ])
 
@@ -84,22 +85,22 @@ plantVillageTest = PlantVillage(csv_file='../data/plantvillage/cherry/cherry.csv
                                 transform=transform)
 
 # Example images
-fig = plt.figure()
-
-for i in range(len(plantVillageTrain)):
-    sample = plantVillageTrain[i]
-
-    sample = np.transpose(sample, (1, 2, 0))
-
-    ax = plt.subplot(1, 4, i + 1)
-    plt.tight_layout()
-    ax.set_title('Sample #{}'.format(i))
-    ax.axis('off')
-    plt.imshow(sample)
-
-    if i == 3:
-        plt.show()
-        break
+# fig = plt.figure()
+#
+# for i in range(len(plantVillageTrain)):
+#     sample = plantVillageTrain[i]
+#
+#     sample = np.transpose(sample, (1, 2, 0))
+#
+#     ax = plt.subplot(1, 4, i + 1)
+#     plt.tight_layout()
+#     ax.set_title('Sample #{}'.format(i))
+#     ax.axis('off')
+#     plt.imshow(sample)
+#
+#     if i == 3:
+#         plt.show()
+#         break
 
 trainloader = get_training_dataloader(plantVillageTrain, batch_size)
 testloader = get_test_dataloader(plantVillageTest, batch_size)
@@ -112,6 +113,8 @@ MODEL TRAINING
 baseModel = BaseModel.ConvVAE().to(device)
 
 poolBaseModel = PoolBaseModel.ConvVAE()
+
+faceGenModel = FaceGenModel.ConvVAE(kernel_size_face_gen, init_channels_face_gen, stride_face_gen, padding_face_gen, image_channels=3)
 
 batchNormBaseModel = BatchNormBaseModel.ConvVAE()
 
