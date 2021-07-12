@@ -5,17 +5,31 @@ import random
 import torch
 
 
-def visualization(net, test_loader, device):
+def visualization(net, testset):
     net.eval()
+
+    plt.figure()
+
     with torch.no_grad():
-        for imgs in random.sample(list(test_loader), 1):
-            imgs = imgs.to(device)
-            img = np.transpose(imgs[0].cpu().numpy(), [1, 2, 0])
-            plt.subplot(121)
-            plt.imshow(np.squeeze(img))
-            out, mu, log_var = net(imgs)
-            outimg = np.transpose(out[0].cpu().numpy(), [1, 2, 0])
-            plt.subplot(122)
-            plt.imshow(np.squeeze(outimg))
-            plt.show()
-            break
+        for i in range(len(testset)):
+            sample = testset[i]
+
+            #sample = np.transpose(sample, (1, 2, 0))
+
+            reconstruction, mu, logvar = net(sample[None, ...])
+
+            ax = plt.subplot(1, 4, (i * 2) + 1)
+            plt.tight_layout()
+            ax.set_title('Sample #{}'.format(i))
+            ax.axis('off')
+            plt.imshow(np.transpose(sample, (1, 2, 0)))
+
+            ax = plt.subplot(1, 4, (i * 2) + 2)
+            plt.tight_layout()
+            ax.set_title('Reconstruction #{}'.format(i))
+            ax.axis('off')
+            plt.imshow(np.transpose(np.squeeze(reconstruction), (1, 2, 0)))
+
+            if i == 1:
+                plt.show()
+                break

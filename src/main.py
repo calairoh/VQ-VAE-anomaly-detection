@@ -9,6 +9,7 @@ from src.data.PlantVillageDataset import PlantVillage
 from src.train import start
 from src.dataset import *
 from src.models import BaseModel, PoolBaseModel, BatchNormBaseModel, FaceGenModel
+from src.visualization import visualization
 
 """MatPlotLib"""
 matplotlib.style.use('ggplot')
@@ -130,4 +131,4 @@ net = start(net=baseModel,
 """
 MODEL VISUALIZATION
 """
-# visualization(net, testloader, device)
+visualization(net, plantVillageTest)
