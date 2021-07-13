@@ -9,6 +9,7 @@ from src.data.PlantVillageDataset import PlantVillage, PlantVillageStatus
 from src.train import start
 from src.dataset import *
 from src.models import BaseModel, PoolBaseModel, BatchNormBaseModel, FaceGenModel
+from src.utils import load_model
 from src.visualization import visualization
 
 """MatPlotLib"""
@@ -18,6 +19,11 @@ plt.ion()
 
 """CUDA"""
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+"""
+SETTINGS
+"""
+LOAD_BEST_MODEL = True
 
 """
 PARAMETERS
@@ -127,14 +133,20 @@ faceGenModel = FaceGenModel.ConvVAE(kernel_size_face_gen, init_channels_face_gen
 
 batchNormBaseModel = BatchNormBaseModel.ConvVAE()
 
-net = start(net=baseModel,
-            trainloader=trainloader,
-            trainset=plantVillageTrain,
-            testloader=testloader,
-            testset=plantVillageTest,
-            epochs=epochs,
-            lr=lr,
-            device=device)
+net, best_epoch = start(net=baseModel,
+                        trainloader=trainloader,
+                        trainset=plantVillageTrain,
+                        testloader=testloader,
+                        testset=plantVillageTest,
+                        epochs=epochs,
+                        lr=lr,
+                        device=device)
+
+if LOAD_BEST_MODEL:
+    print('Loading epoch #{}'.format(best_epoch))
+    load_model(best_epoch)
+else:
+    print('Using net as-is')
 
 """
 MODEL VISUALIZATION

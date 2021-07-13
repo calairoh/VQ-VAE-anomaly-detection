@@ -34,4 +34,8 @@ def save_loss_plot(train_loss, valid_loss):
 
 
 def save_model(model, epoch):
-    torch.save(model.state_dict(), f'../outputs/params/model{epoch}')
+    torch.save(model.state_dict(), f'../outputs/params/model-{epoch}')
+
+
+def load_model(epoch):
+    return torch.load(f'../outputs/params/model-{epoch}')

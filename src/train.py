@@ -1,3 +1,5 @@
+import sys
+
 import torch.nn as nn
 import torch.optim as optim
 from torchvision.utils import make_grid
@@ -16,6 +18,9 @@ def start(net,
           epochs,
           lr,
           device):
+
+    best_val_loss = sys.maxsize
+    best_epoch = -1
 
     # summary
     summary(net, (3, 64, 64))
@@ -49,10 +54,14 @@ def start(net,
         print(f"Train Loss: {train_epoch_loss:.4f}")
         print(f"Val Loss: {valid_epoch_loss:.4f}")
 
+        if valid_epoch_loss < best_val_loss:
+            best_val_loss = valid_epoch_loss
+            best_epoch = epoch + 1
+
     # save the reconstructions as a .gif file
     image_to_vid(grid_images)
     # save the loss plots to disk
     save_loss_plot(train_loss, valid_loss)
     print('TRAINING COMPLETE')
 
-    return net
+    return net, best_epoch
