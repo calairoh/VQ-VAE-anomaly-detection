@@ -19,6 +19,11 @@ warnings.filterwarnings("ignore")
 plt.ion()  # interactive mode
 
 
+class PlantVillageStatus(Enum):
+    HEALTHY = 1
+    DISEASE = 2
+
+
 class PlantVillage(Dataset):
     """PlantVillage data."""
 
@@ -26,9 +31,9 @@ class PlantVillage(Dataset):
                  csv_file,
                  root_dir,
                  transform=None,
-                 healthy_only=False,
+                 status=None,
                  validation=False,
-                 validationSplit=0):
+                 validation_split=0):
         """
         Args:
             csv_file (string): Path to the csv file with annotations.
@@ -36,15 +41,20 @@ class PlantVillage(Dataset):
             transform (callable, optional): Optional transform to be applied
                 on a sample.
         """
+        if status is None:
+            status = list(PlantVillageStatus)
         self.df = pd.read_csv(csv_file)
         self.root_dir = root_dir
         self.transform = transform
-        self.healthy_only = healthy_only
+        self.status = status
         self.validation = validation
-        self.validationSplit = validationSplit
+        self.validationSplit = validation_split
 
-        if healthy_only:
-            self.df = self.df[self.df.Status == 'healthy']
+        if len(self.status) < 2:
+            if self.status[0] == PlantVillageStatus.HEALTHY:
+                self.df = self.df[self.df.Status == 'healthy']
+            else:
+                self.df = self.df[self.df.Status == 'disease']
 
         if self.validation:
             self.df = self.df.tail(int(self.validationSplit * len(self.df)))

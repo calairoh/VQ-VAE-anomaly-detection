@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from src.data.MendeleyDataset import MendeleyDataset, MendeleyPlant
-from src.data.PlantVillageDataset import PlantVillage
+from src.data.PlantVillageDataset import PlantVillage, PlantVillageStatus
 from src.train import start
 from src.dataset import *
 from src.models import BaseModel, PoolBaseModel, BatchNormBaseModel, FaceGenModel
@@ -36,7 +36,7 @@ padding_face_gen = 0
 
 # TRAINING
 lr = 0.005
-epochs = 50
+epochs = 1
 
 transform = transforms.Compose([
     transforms.Resize((img_height, img_width)),
@@ -73,16 +73,16 @@ if not PlantVillage.csvExists():
 
 plantVillageTrain = PlantVillage(csv_file='../data/plantvillage/cherry/cherry.csv',
                                  root_dir='../data/plantvillage/cherry',
-                                 healthy_only=True,
+                                 status=list([PlantVillageStatus.HEALTHY]),
                                  validation=False,
-                                 validationSplit=validationSplit,
+                                 validation_split=validationSplit,
                                  transform=transform)
 
 plantVillageTest = PlantVillage(csv_file='../data/plantvillage/cherry/cherry.csv',
                                 root_dir='../data/plantvillage/cherry',
-                                healthy_only=True,
+                                status=list([PlantVillageStatus.HEALTHY]),
                                 validation=True,
-                                validationSplit=validationSplit,
+                                validation_split=validationSplit,
                                 transform=transform)
 
 # Example images
@@ -131,4 +131,4 @@ net = start(net=baseModel,
 """
 MODEL VISUALIZATION
 """
-visualization(net, plantVillageTest)
+visualization(net, plantVillageTest, slot_num=4)
