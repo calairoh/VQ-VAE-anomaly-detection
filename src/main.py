@@ -36,7 +36,7 @@ padding_face_gen = 0
 
 # TRAINING
 lr = 0.005
-epochs = 1
+epochs = 50
 
 transform = transforms.Compose([
     transforms.Resize((img_height, img_width)),
@@ -87,7 +87,7 @@ plantVillageVal = PlantVillage(csv_file='../data/plantvillage/cherry/cherry.csv'
 
 plantVillageTest = PlantVillage(csv_file='../data/plantvillage/cherry/cherry.csv',
                                 root_dir='../data/plantvillage/cherry',
-                                status=list([PlantVillageStatus.DISEASE]),
+                                status=list(PlantVillageStatus),
                                 validation=True,
                                 validation_split=validationSplit,
                                 transform=transform)
@@ -139,4 +139,4 @@ net = start(net=baseModel,
 """
 MODEL VISUALIZATION
 """
-visualization(net, plantVillageTest, slot_num=4)
+visualization(net, plantVillageTest, slot_num=2)
