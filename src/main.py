@@ -78,9 +78,16 @@ plantVillageTrain = PlantVillage(csv_file='../data/plantvillage/cherry/cherry.cs
                                  validation_split=validationSplit,
                                  transform=transform)
 
+plantVillageVal = PlantVillage(csv_file='../data/plantvillage/cherry/cherry.csv',
+                               root_dir='../data/plantvillage/cherry',
+                               status=list([PlantVillageStatus.HEALTHY]),
+                               validation=True,
+                               validation_split=validationSplit,
+                               transform=transform)
+
 plantVillageTest = PlantVillage(csv_file='../data/plantvillage/cherry/cherry.csv',
                                 root_dir='../data/plantvillage/cherry',
-                                status=list([PlantVillageStatus.HEALTHY]),
+                                status=list([PlantVillageStatus.DISEASE]),
                                 validation=True,
                                 validation_split=validationSplit,
                                 transform=transform)
@@ -104,7 +111,7 @@ plantVillageTest = PlantVillage(csv_file='../data/plantvillage/cherry/cherry.csv
 #         break
 
 trainloader = get_training_dataloader(plantVillageTrain, batch_size)
-testloader = get_test_dataloader(plantVillageTest, batch_size)
+testloader = get_test_dataloader(plantVillageVal, batch_size)
 
 """
 MODEL TRAINING
@@ -115,7 +122,8 @@ baseModel = BaseModel.ConvVAE().to(device)
 
 poolBaseModel = PoolBaseModel.ConvVAE()
 
-faceGenModel = FaceGenModel.ConvVAE(kernel_size_face_gen, init_channels_face_gen, stride_face_gen, padding_face_gen, image_channels=3)
+faceGenModel = FaceGenModel.ConvVAE(kernel_size_face_gen, init_channels_face_gen, stride_face_gen, padding_face_gen,
+                                    image_channels=3)
 
 batchNormBaseModel = BatchNormBaseModel.ConvVAE()
 
