@@ -31,8 +31,8 @@ PARAMETERS
 # DATASET
 validationSplit = 0.1
 batch_size = 4
-img_width = 64
-img_height = 64
+img_width = 256
+img_height = 256
 
 # FACE GEN MODEL
 kernel_size_face_gen = 4
@@ -93,7 +93,7 @@ plantVillageVal = PlantVillage(csv_file='../data/plantvillage/cherry/cherry.csv'
 
 plantVillageTest = PlantVillage(csv_file='../data/plantvillage/cherry/cherry.csv',
                                 root_dir='../data/plantvillage/cherry',
-                                status=list(PlantVillageStatus),
+                                status=list([PlantVillageStatus.DISEASE]),
                                 validation=True,
                                 validation_split=validationSplit,
                                 transform=transform)

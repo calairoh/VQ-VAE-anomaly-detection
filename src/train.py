@@ -23,11 +23,11 @@ def start(net,
     best_epoch = -1
 
     # summary
-    summary(net, (3, 64, 64))
+    summary(net, (3, 256, 256))
 
     # set the learning parameters
     optimizer = optim.Adadelta(net.parameters())
-    criterion = nn.BCELoss(reduction='sum')
+    criterion = nn.MSELoss(reduction='sum')
     # a list to save all the reconstructed images in PyTorch grid format
     grid_images = []
 

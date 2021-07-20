@@ -8,7 +8,7 @@ class ConvVAE(nn.Module):
     def __init__(self):
         super(ConvVAE, self).__init__()
 
-        init_channels = 32
+        init_channels = 16
         image_channels = 3
         latent_dim = 16
 
@@ -29,8 +29,8 @@ class ConvVAE(nn.Module):
 
         # decoder
         self.dec1 = nn.ConvTranspose2d(64, init_channels * 8, kernel_size=4, stride=1, padding=0)
-        self.dec2 = nn.ConvTranspose2d(init_channels * 8, init_channels * 4, kernel_size=4, stride=2, padding=1)
-        self.dec3 = nn.ConvTranspose2d(init_channels * 4, init_channels * 2, kernel_size=4, stride=2, padding=1)
+        self.dec2 = nn.ConvTranspose2d(init_channels * 8, init_channels * 4, kernel_size=4, stride=4, padding=0)
+        self.dec3 = nn.ConvTranspose2d(init_channels * 4, init_channels * 2, kernel_size=4, stride=4, padding=0)
         self.dec4 = nn.ConvTranspose2d(init_channels * 2, init_channels, kernel_size=4, stride=2, padding=1)
         self.dec5 = nn.ConvTranspose2d(init_channels, image_channels, kernel_size=4, stride=2, padding=1)
 
