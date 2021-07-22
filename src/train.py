@@ -20,7 +20,7 @@ def start(net,
           device):
 
     best_val_loss = sys.maxsize
-    best_epoch = -1
+    best_epoch = 1
 
     # summary
     summary(net, (3, 256, 256))

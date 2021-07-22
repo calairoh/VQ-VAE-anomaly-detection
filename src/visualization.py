@@ -17,10 +17,10 @@ def visualization(net, testset, slot_num=2):
         for i in range(len(testset)):
             sample = testset[i]
 
-            reconstruction, mu, logvar = net(sample[None, ...])
+            reconstruction, mu, logvar = net(sample)
 
             criterion = nn.BCELoss(reduction='sum')
-            bce_loss = criterion(reconstruction, sample[None, ...])
+            bce_loss = criterion(reconstruction, sample)
             loss = final_loss(bce_loss, mu, logvar)
 
             ax = plt.subplot(1, slot_num * 2, (i * 2) + 1)

@@ -44,7 +44,7 @@ padding_face_gen = 0
 
 # TRAINING
 lr = 0.005
-epochs = 100
+epochs = 1
 
 transform = transforms.Compose([
     transforms.Resize((img_height, img_width)),
@@ -78,7 +78,8 @@ plantVillageTest = PlantVillage(csv_file='../data/plantvillage/cherry/test/data.
                                 transform=transform)
 
 trainloader = get_training_dataloader(plantVillageTrain, batch_size)
-testloader = get_test_dataloader(plantVillageVal, batch_size)
+validationloader = get_validation_dataloader(plantVillageVal, batch_size)
+testloader = get_test_dataloader(plantVillageTest, batch_size=1)
 
 """
 MODEL TRAINING
@@ -97,7 +98,7 @@ batchNormBaseModel = BatchNormBaseModel.ConvVAE()
 net, best_epoch = start(net=baseModel,
                         trainloader=trainloader,
                         trainset=plantVillageTrain,
-                        testloader=testloader,
+                        testloader=validationloader,
                         testset=plantVillageTest,
                         epochs=epochs,
                         lr=lr,

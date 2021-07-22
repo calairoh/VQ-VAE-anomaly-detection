@@ -22,11 +22,11 @@ def train(model, dataloader, dataset, device, optimizer, criterion):
     counter = 0
     for i, data in tqdm(enumerate(dataloader), total=int(len(dataset) / dataloader.batch_size)):
         counter += 1
-        data = data[0]
+        data = data['image']
         data = data.to(device)
         optimizer.zero_grad()
-        reconstruction, mu, logvar = model(data[None, ...])
-        bce_loss = criterion(reconstruction, data[None, ...])
+        reconstruction, mu, logvar = model(data)
+        bce_loss = criterion(reconstruction, data)
         loss = final_loss(bce_loss, mu, logvar)
         loss.backward()
         running_loss += loss.item()
@@ -42,10 +42,10 @@ def validate(model, dataloader, dataset, device, criterion):
     with torch.no_grad():
         for i, data in tqdm(enumerate(dataloader), total=int(len(dataset) / dataloader.batch_size)):
             counter += 1
-            data = data[0]
+            data = data['image']
             data = data.to(device)
-            reconstruction, mu, logvar = model(data[None, ...])
-            bce_loss = criterion(reconstruction, data[None, ...])
+            reconstruction, mu, logvar = model(data)
+            bce_loss = criterion(reconstruction, data)
             loss = final_loss(bce_loss, mu, logvar)
             running_loss += loss.item()
 

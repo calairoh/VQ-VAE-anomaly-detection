@@ -59,7 +59,9 @@ class PlantVillage(Dataset):
         if self.transform:
             image = self.transform(image)
 
-        return image
+        res = {'image': image, 'label': 0 if self.df.iloc[idx, 2] == 'healthy' else 1}
+
+        return res
 
     @staticmethod
     def create_csv(path):
