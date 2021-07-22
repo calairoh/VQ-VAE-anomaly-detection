@@ -1,3 +1,5 @@
+import os
+
 import matplotlib
 import torch
 import torchvision.transforms as transforms
@@ -42,7 +44,7 @@ padding_face_gen = 0
 
 # TRAINING
 lr = 0.005
-epochs = 50
+epochs = 100
 
 transform = transforms.Compose([
     transforms.Resize((img_height, img_width)),
@@ -53,68 +55,27 @@ transform = transforms.Compose([
 """
 DATASET GENERATION
 """
-# Mendeley dataset
-# if not MendeleyDataset.csvExists():
-#     MendeleyDataset.create_csv('../data/mendeley')
-#
-# mendeleyDatasetTrain = MendeleyDataset(csv_file='../data/mendeley/mendeley.csv',
-#                                        root_dir='../data/mendeley',
-#                                        healthy_only=True,
-#                                        plants=list([MendeleyPlant.ALSTONIA_SCHOLARIS]),
-#                                        validation=False,
-#                                        validationSplit=validationSplit,
-#                                        transform=transform)
-#
-# mendeleyDatasetTest = MendeleyDataset(csv_file='../data/mendeley/mendeley.csv',
-#                                       root_dir='../data/mendeley',
-#                                       healthy_only=True,
-#                                       plants=list([MendeleyPlant.ALSTONIA_SCHOLARIS]),
-#                                       validation=True,
-#                                       validationSplit=validationSplit,
-#                                       transform=transform)
-
 # Plant Village dataset
-if not PlantVillage.csvExists():
-    PlantVillage.create_csv("../data/plantvillage/cherry")
+if not os.path.exists('../data/plantvillage/cherry/train/data.csv'):
+    PlantVillage.create_csv("../data/plantvillage/cherry/train")
 
-plantVillageTrain = PlantVillage(csv_file='../data/plantvillage/cherry/cherry.csv',
-                                 root_dir='../data/plantvillage/cherry',
-                                 status=list([PlantVillageStatus.HEALTHY]),
-                                 validation=False,
-                                 validation_split=validationSplit,
+if not os.path.exists('../data/plantvillage/cherry/val/data.csv'):
+    PlantVillage.create_csv("../data/plantvillage/cherry/val")
+
+if not os.path.exists('../data/plantvillage/cherry/test/data.csv'):
+    PlantVillage.create_csv("../data/plantvillage/cherry/test")
+
+plantVillageTrain = PlantVillage(csv_file='../data/plantvillage/cherry/train/data.csv',
+                                 root_dir='../data/plantvillage/cherry/train',
                                  transform=transform)
 
-plantVillageVal = PlantVillage(csv_file='../data/plantvillage/cherry/cherry.csv',
-                               root_dir='../data/plantvillage/cherry',
-                               status=list([PlantVillageStatus.HEALTHY]),
-                               validation=True,
-                               validation_split=validationSplit,
+plantVillageVal = PlantVillage(csv_file='../data/plantvillage/cherry/val/data.csv',
+                               root_dir='../data/plantvillage/cherry/val',
                                transform=transform)
 
-plantVillageTest = PlantVillage(csv_file='../data/plantvillage/cherry/cherry.csv',
-                                root_dir='../data/plantvillage/cherry',
-                                status=list([PlantVillageStatus.DISEASE]),
-                                validation=True,
-                                validation_split=validationSplit,
+plantVillageTest = PlantVillage(csv_file='../data/plantvillage/cherry/test/data.csv',
+                                root_dir='../data/plantvillage/cherry/test',
                                 transform=transform)
-
-# Example images
-# fig = plt.figure()
-#
-# for i in range(len(plantVillageTrain)):
-#     sample = plantVillageTrain[i]
-#
-#     sample = np.transpose(sample, (1, 2, 0))
-#
-#     ax = plt.subplot(1, 4, i + 1)
-#     plt.tight_layout()
-#     ax.set_title('Sample #{}'.format(i))
-#     ax.axis('off')
-#     plt.imshow(sample)
-#
-#     if i == 3:
-#         plt.show()
-#         break
 
 trainloader = get_training_dataloader(plantVillageTrain, batch_size)
 testloader = get_test_dataloader(plantVillageVal, batch_size)
@@ -152,3 +113,7 @@ else:
 MODEL VISUALIZATION
 """
 visualization(net, plantVillageTest, slot_num=2)
+
+"""
+MODEL TEST
+"""

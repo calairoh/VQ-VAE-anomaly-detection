@@ -8,27 +8,28 @@ class ConvVAE(nn.Module):
     def __init__(self):
         super(ConvVAE, self).__init__()
 
-        init_channels = 16
+        init_channels = 32
         image_channels = 3
-        latent_dim = 16
+        latent_dim = 256
 
         # encoder
         self.enc1 = nn.Conv2d(image_channels, init_channels, kernel_size=4, stride=1, padding=0)
         self.enc2 = nn.Conv2d(init_channels, init_channels * 2, kernel_size=4, stride=1, padding=0)
         self.enc3 = nn.Conv2d(init_channels * 2, init_channels * 4, kernel_size=4, stride=1, padding=0)
         self.enc4 = nn.Conv2d(init_channels * 4, init_channels * 8, kernel_size=4, stride=1, padding=0)
+        self.enc5 = nn.Conv2d(init_channels * 8, init_channels * 16, kernel_size=4, stride=1, padding=0)
         self.maxPool = nn.MaxPool2d(2)
 
 
         # fully connected layers for learning representations
         #self.flatten = nn.Flatten()
-        self.fc1 = nn.Linear(init_channels * 8, 64)
-        self.fc_mu = nn.Linear(64, latent_dim)
-        self.fc_log_var = nn.Linear(64, latent_dim)
-        self.fc2 = nn.Linear(latent_dim, 64)
+        self.fc1 = nn.Linear(init_channels * 16, 512)
+        self.fc_mu = nn.Linear(512, latent_dim)
+        self.fc_log_var = nn.Linear(512, latent_dim)
+        self.fc2 = nn.Linear(latent_dim, 512)
 
         # decoder
-        self.dec1 = nn.ConvTranspose2d(64, init_channels * 8, kernel_size=4, stride=1, padding=0)
+        self.dec1 = nn.ConvTranspose2d(512, init_channels * 8, kernel_size=4, stride=1, padding=0)
         self.dec2 = nn.ConvTranspose2d(init_channels * 8, init_channels * 4, kernel_size=4, stride=4, padding=0)
         self.dec3 = nn.ConvTranspose2d(init_channels * 4, init_channels * 2, kernel_size=4, stride=4, padding=0)
         self.dec4 = nn.ConvTranspose2d(init_channels * 2, init_channels, kernel_size=4, stride=2, padding=1)
@@ -53,6 +54,8 @@ class ConvVAE(nn.Module):
         x = F.relu(self.enc3(x))
         x = self.maxPool(x)
         x = F.relu(self.enc4(x))
+        x = self.maxPool(x)
+        x = F.relu(self.enc5(x))
 
         batch, _, _, _ = x.shape
         x = F.adaptive_avg_pool2d(x, 1).reshape(batch, -1)
@@ -63,7 +66,7 @@ class ConvVAE(nn.Module):
         # get the latent vector through reparameterization
         z = self.reparameterize(mu, log_var)
         z = self.fc2(z)
-        z = z.view(-1, 64, 1, 1)
+        z = z.view(-1, 512, 1, 1)
 
         # decoding
         x = F.relu(self.dec1(z))

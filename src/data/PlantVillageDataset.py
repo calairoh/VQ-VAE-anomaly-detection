@@ -31,9 +31,7 @@ class PlantVillage(Dataset):
                  csv_file,
                  root_dir,
                  transform=None,
-                 status=None,
-                 validation=False,
-                 validation_split=0):
+                 status=None):
         """
         Args:
             csv_file (string): Path to the csv file with annotations.
@@ -41,25 +39,9 @@ class PlantVillage(Dataset):
             transform (callable, optional): Optional transform to be applied
                 on a sample.
         """
-        if status is None:
-            status = list(PlantVillageStatus)
         self.df = pd.read_csv(csv_file)
         self.root_dir = root_dir
         self.transform = transform
-        self.status = status
-        self.validation = validation
-        self.validationSplit = validation_split
-
-        if len(self.status) < 2:
-            if self.status[0] == PlantVillageStatus.HEALTHY:
-                self.df = self.df[self.df.Status == 'healthy']
-            else:
-                self.df = self.df[self.df.Status == 'disease']
-
-        if self.validation:
-            self.df = self.df.tail(int(self.validationSplit * len(self.df)))
-        else:
-            self.df = self.df.head(int((1 - self.validationSplit) * len(self.df)))
 
     def __len__(self):
         return len(self.df)
@@ -80,10 +62,6 @@ class PlantVillage(Dataset):
         return image
 
     @staticmethod
-    def csvExists():
-        return os.path.exists('../data/plantvillage/cherry/cherry.csv')
-
-    @staticmethod
     def create_csv(path):
         """
         :type path: Path to image folder
@@ -91,6 +69,7 @@ class PlantVillage(Dataset):
         print('CSV creation...')
 
         data = []
+
         for status in next(os.walk(path))[1]:
             for img in next(os.walk(os.path.join(path, status)))[2]:
                 obj = {'Name': img, 'Status': status}
@@ -99,5 +78,5 @@ class PlantVillage(Dataset):
                 print(os.path.join(path, status, img))
 
         df = pd.DataFrame(data)
-        df.to_csv('../data/plantvillage/cherry/cherry.csv')
+        df.to_csv(path + '/data.csv')
         print('CSV successfully created')
