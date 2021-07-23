@@ -5,8 +5,6 @@ from src.metrics.classification import accuracy, recall, precision, tpr, fpr
 
 
 def classification_performance_computation(net, testloader, testset, device, criterion, thresholds):
-    net.eval()
-
     res = []
     for i, data in tqdm(enumerate(testloader), total=len(testset)):
         img = data['image']

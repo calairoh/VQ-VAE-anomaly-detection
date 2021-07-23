@@ -31,7 +31,7 @@ def train(model, dataloader, dataset, device, optimizer, criterion):
         loss.backward()
         running_loss += loss.item()
         optimizer.step()
-    train_loss = running_loss / counter
+    train_loss = running_loss / (counter * dataloader.batch_size)
     return train_loss
 
 

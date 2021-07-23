@@ -44,7 +44,7 @@ padding_face_gen = 0
 
 # TRAINING
 lr = 0.005
-epochs = 30
+epochs = 20
 
 transform = transforms.Compose([
     transforms.Resize((img_height, img_width)),
