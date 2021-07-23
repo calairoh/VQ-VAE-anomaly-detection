@@ -15,6 +15,9 @@ def precision(data):
     TP = metrics['TP']
     FP = metrics['FP']
 
+    if TP + FP == 0:
+        return 0
+
     return TP / (TP + FP)
 
 
@@ -23,6 +26,9 @@ def recall(data):
 
     TP = metrics['TP']
     FN = metrics['FN']
+
+    if TP + FN == 0:
+        return 0
 
     return TP / (TP + FN)
 
@@ -36,6 +42,9 @@ def fpr(data):
 
     FP = metrics['FP']
     TN = metrics['TN']
+
+    if FP + TN == 0:
+        return 0
 
     return FP / (FP + TN)
 

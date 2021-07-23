@@ -15,12 +15,12 @@ def visualization(net, testset, slot_num=2):
 
     with torch.no_grad():
         for i in range(len(testset)):
-            sample = testset[i]
+            sample = testset[i]['image']
 
-            reconstruction, mu, logvar = net(sample)
+            reconstruction, mu, logvar = net(sample[None, ...])
 
             criterion = nn.BCELoss(reduction='sum')
-            bce_loss = criterion(reconstruction, sample)
+            bce_loss = criterion(reconstruction, sample[None, ...])
             loss = final_loss(bce_loss, mu, logvar)
 
             ax = plt.subplot(1, slot_num * 2, (i * 2) + 1)

@@ -1,16 +1,16 @@
 import os
 
 import matplotlib
-import torch
-import torchvision.transforms as transforms
 import matplotlib.pyplot as plt
-import numpy as np
+import torch
+import torch.nn as nn
+import torchvision.transforms as transforms
 
-from src.data.MendeleyDataset import MendeleyDataset, MendeleyPlant
-from src.data.PlantVillageDataset import PlantVillage, PlantVillageStatus
-from src.train import start
+from performance.classification import classification_performance_computation
+from src.data.PlantVillageDataset import PlantVillage
 from src.dataset import *
 from src.models import BaseModel, PoolBaseModel, BatchNormBaseModel, FaceGenModel
+from src.train import start
 from src.utils import load_model
 from src.visualization import visualization
 
@@ -44,7 +44,7 @@ padding_face_gen = 0
 
 # TRAINING
 lr = 0.005
-epochs = 1
+epochs = 30
 
 transform = transforms.Compose([
     transforms.Resize((img_height, img_width)),
@@ -78,7 +78,7 @@ plantVillageTest = PlantVillage(csv_file='../data/plantvillage/cherry/test/data.
                                 transform=transform)
 
 trainloader = get_training_dataloader(plantVillageTrain, batch_size)
-validationloader = get_validation_dataloader(plantVillageVal, batch_size)
+validationloader = get_validation_dataloader(plantVillageVal, batch_size=1)
 testloader = get_test_dataloader(plantVillageTest, batch_size=1)
 
 """
@@ -87,13 +87,6 @@ MODEL TRAINING
 
 # initialize the model
 baseModel = BaseModel.ConvVAE().to(device)
-
-poolBaseModel = PoolBaseModel.ConvVAE()
-
-faceGenModel = FaceGenModel.ConvVAE(kernel_size_face_gen, init_channels_face_gen, stride_face_gen, padding_face_gen,
-                                    image_channels=3)
-
-batchNormBaseModel = BatchNormBaseModel.ConvVAE()
 
 net, best_epoch = start(net=baseModel,
                         trainloader=trainloader,
@@ -116,5 +109,11 @@ MODEL VISUALIZATION
 visualization(net, plantVillageTest, slot_num=2)
 
 """
-CLASSIFICATION THRESHOLD IDENTIFICATION
+CLASSIFICATION TEST
 """
+thresholds = []
+for threshold in range(0, 6000, 100):
+    thresholds.append(threshold)
+
+criterion = nn.MSELoss(reduction='sum')
+classification_performance_computation(net, testloader, plantVillageTest, device, criterion, thresholds)

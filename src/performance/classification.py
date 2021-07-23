@@ -4,13 +4,15 @@ from src.engine import final_loss
 from src.metrics.classification import accuracy, recall, precision, tpr, fpr
 
 
-def classification_test(net, testloader, testset, device, criterion, thresholds):
+def classification_performance_computation(net, testloader, testset, device, criterion, thresholds):
+    net.eval()
+
     res = []
     for i, data in tqdm(enumerate(testloader), total=len(testset)):
-        data = data['image']
-        data = data.to(device)
-        reconstruction, mu, logvar = net(data)
-        bce_loss = criterion(reconstruction, data)
+        img = data['image']
+        img = img.to(device)
+        reconstruction, mu, logvar = net(img)
+        bce_loss = criterion(reconstruction, img)
         loss = final_loss(bce_loss, mu, logvar)
         loss.backward()
 
@@ -22,9 +24,9 @@ def classification_test(net, testloader, testset, device, criterion, thresholds)
 
 def classify(res, threshold):
     data = []
-    for i, r in res:
+    for r in res:
         label = 0 if r['loss'] < threshold else 1
-        data.append({'label': label, 'realLabel': data['label']})
+        data.append({'label': label, 'realLabel': r['realLabel']})
 
     acc = accuracy(data)
     pre = precision(data)
@@ -33,9 +35,9 @@ def classify(res, threshold):
     fp_rate = fpr(data)
 
     print('-----------------------------')
-    print('Threshold: ' + threshold)
-    print('Accuracy: ' + acc)
-    print('Precision: ' + pre)
-    print('Recall: ' + rec)
-    print('TPR: ' + tp_rate)
-    print('FPR' + fp_rate)
+    print('Threshold: ' + str(threshold))
+    print('Accuracy: ' + str(acc))
+    print('Precision: ' + str(pre))
+    print('Recall: ' + str(rec))
+    print('TPR: ' + str(tp_rate))
+    print('FPR' + str(fp_rate))
