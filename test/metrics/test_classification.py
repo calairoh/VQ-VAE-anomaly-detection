@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from metrics.classification import accuracy, get_metrics, precision, recall
+from metrics.classification import accuracy, get_metrics, precision, recall, tpr, fpr
 
 
 class Test(TestCase):
@@ -69,6 +69,36 @@ class Test(TestCase):
         res = recall(data)
 
         self.assertAlmostEquals(res, 0.11, places=2, msg='Recall test failed')
+
+    def test_tpr(self):
+        # 0 HEALTHY
+        # 1 DISEASE
+
+        TP = 1
+        TN = 90
+        FP = 1
+        FN = 8
+
+        data = Test.create_data(TP, TN, FP, FN)
+
+        res = tpr(data)
+
+        self.assertAlmostEquals(res, 0.11, places=2, msg='Recall test failed')
+
+    def test_fpr(self):
+        # 0 HEALTHY
+        # 1 DISEASE
+
+        TP = 1
+        TN = 90
+        FP = 1
+        FN = 8
+
+        data = Test.create_data(TP, TN, FP, FN)
+
+        res = fpr(data)
+
+        self.assertAlmostEquals(res, 0.01, places=2, msg='Recall test failed')
 
     def test_get_metrics(self):
         # 0 HEALTHY

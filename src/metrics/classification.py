@@ -27,6 +27,19 @@ def recall(data):
     return TP / (TP + FN)
 
 
+def tpr(data):
+    return recall(data)
+
+
+def fpr(data):
+    metrics = get_metrics(data)
+
+    FP = metrics['FP']
+    TN = metrics['TN']
+
+    return FP / (FP + TN)
+
+
 def get_metrics(data):
     TP = 0
     TN = 0
