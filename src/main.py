@@ -116,5 +116,5 @@ MODEL VISUALIZATION
 visualization(net, plantVillageTest, slot_num=2)
 
 """
-MODEL TEST
+CLASSIFICATION THRESHOLD IDENTIFICATION
 """
