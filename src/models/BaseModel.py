@@ -42,7 +42,7 @@ class ConvVAE(nn.Module):
         """
         std = torch.exp(0.5 * log_var)  # standard deviation
         eps = torch.randn_like(std)  # `randn_like` as we need the same size
-        sample = mu + (eps * std)  # sampling
+        sample = mu #+ (eps * std)  # sampling
         return sample
 
     def forward(self, x):
@@ -54,7 +54,7 @@ class ConvVAE(nn.Module):
         x = F.relu(self.enc3(x))
         x = self.maxPool(x)
         x = F.relu(self.enc4(x))
-        x = self.maxPool(x)
+        #x = self.maxPool(x)
         #x = F.relu(self.enc5(x))
 
         batch, _, _, _ = x.shape

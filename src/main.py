@@ -44,7 +44,7 @@ padding_face_gen = 0
 
 # TRAINING
 lr = 0.005
-epochs = 20
+epochs = 100
 
 transform = transforms.Compose([
     transforms.Resize((img_height, img_width)),
@@ -112,7 +112,7 @@ visualization(net, plantVillageTest, slot_num=2)
 CLASSIFICATION TEST
 """
 thresholds = []
-for threshold in range(0, 6000, 100):
+for threshold in range(1000, 3000, 50):
     thresholds.append(threshold)
 
 criterion = nn.MSELoss(reduction='sum')
