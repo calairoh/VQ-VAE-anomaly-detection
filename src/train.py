@@ -5,7 +5,7 @@ import torch.optim as optim
 from torchvision.utils import make_grid
 from torchsummary import summary
 
-from src.models import BaseModel
+from src.models import ConvVAE
 from engine import train, validate
 from utils import save_reconstructed_images, image_to_vid, save_loss_plot, save_original_images, save_model
 

@@ -9,7 +9,7 @@ import torchvision.transforms as transforms
 from performance.classification import classification_performance_computation
 from src.data.PlantVillageDataset import PlantVillage
 from src.dataset import *
-from src.models import BaseModel, PoolBaseModel, BatchNormBaseModel, FaceGenModel
+from src.models import ConvVAE, ConvAE
 from src.train import start
 from src.utils import load_model
 from src.visualization import visualization
@@ -86,7 +86,7 @@ MODEL TRAINING
 """
 
 # initialize the model
-baseModel = BaseModel.ConvVAE().to(device)
+baseModel = ConvAE.ConvVAE().to(device)
 
 net, best_epoch = start(net=baseModel,
                         trainloader=trainloader,
