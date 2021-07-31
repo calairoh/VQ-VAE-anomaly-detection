@@ -11,7 +11,7 @@ from metrics.classification import accuracy, precision, recall, tpr, fpr
 from utils import save_original_images, save_reconstructed_images, save_model, image_to_vid, save_loss_plot
 
 
-class CVAEEngine:
+class CAEEngine:
     def __init__(self, net, trainloader, trainset, testloader, testset, epochs, optimizer, criterion, device):
         self.net = net
         self.trainloader = trainloader
@@ -70,20 +70,7 @@ class CVAEEngine:
         return self.net, best_epoch
 
     @staticmethod
-    def final_loss(bce_loss, mu, logvar):
-        """
-        This function will add the reconstruction loss (BCELoss) and the
-        KL-Divergence.
-        KL-Divergence = 0.5 * sum(1 + log(sigma^2) - mu^2 - sigma^2)
-        :param bce_loss: reconstruction loss
-        :param mu: the mean from the latent vector
-        :param logvar: log variance from the latent vector
-        """
-        bce = bce_loss
-        kld = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
-        return bce + kld
-
-    def train(self, model, dataloader, dataset, device, optimizer, criterion):
+    def train(model, dataloader, dataset, device, optimizer, criterion):
         model.train()
         running_loss = 0.0
         counter = 0
@@ -92,16 +79,16 @@ class CVAEEngine:
             data = data['image']
             data = data.to(device)
             optimizer.zero_grad()
-            reconstruction, mu, logvar = model(data)
-            bce_loss = criterion(reconstruction, data)
-            loss = self.final_loss(bce_loss, mu, logvar)
+            reconstruction = model(data)
+            loss = criterion(reconstruction, data)
             loss.backward()
             running_loss += loss.item()
             optimizer.step()
         train_loss = running_loss / (counter * dataloader.batch_size)
         return train_loss
 
-    def validate(self, model, dataloader, dataset, device, criterion):
+    @staticmethod
+    def validate(model, dataloader, dataset, device, criterion):
         model.eval()
         running_loss = 0.0
         counter = 0
@@ -110,9 +97,8 @@ class CVAEEngine:
                 counter += 1
                 data = data['image']
                 data = data.to(device)
-                reconstruction, mu, logvar = model(data)
-                bce_loss = criterion(reconstruction, data)
-                loss = self.final_loss(bce_loss, mu, logvar)
+                reconstruction = model(data)
+                loss = criterion(reconstruction, data)
                 running_loss += loss.item()
 
                 # save the last batch input and output of every epoch
@@ -127,9 +113,8 @@ class CVAEEngine:
         for i, data in tqdm(enumerate(testloader), total=len(testset)):
             img = data['image']
             img = img.to(self.device)
-            reconstruction, mu, logvar = net(img)
-            bce_loss = self.criterion(reconstruction, img)
-            loss = self.final_loss(bce_loss, mu, logvar)
+            reconstruction = net(img)
+            loss = self.criterion(reconstruction, img)
             loss.backward()
 
             res.append({'loss': loss, 'realLabel': data['label']})
@@ -146,10 +131,9 @@ class CVAEEngine:
             for i in range(len(testset)):
                 sample = testset[i]['image']
 
-                reconstruction, mu, logvar = net(sample[None, ...])
+                reconstruction = net(sample[None, ...])
 
-                bce_loss = self.criterion(reconstruction, sample[None, ...])
-                loss = self.final_loss(bce_loss, mu, logvar)
+                loss = self.criterion(reconstruction, sample[None, ...])
 
                 ax = plt.subplot(1, slot_num * 2, (i * 2) + 1)
                 plt.tight_layout()

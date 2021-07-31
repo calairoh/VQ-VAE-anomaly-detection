@@ -7,7 +7,8 @@ import torch.nn as nn
 import torch.optim as opt
 import torchvision.transforms as transforms
 
-from models.CAE.ConvAE import ConvVAE
+from models.CAE.CAEEngine import CAEEngine
+from models.CAE.ConvAE import ConvAE
 from models.CVAE.CVAEEngine import CVAEEngine
 from src.data.PlantVillageDataset import PlantVillage
 from data.dataset import *
@@ -84,19 +85,19 @@ MODEL TRAINING
 """
 
 # initialize the model
-model = ConvVAE().to(device)
+model = ConvAE().to(device)
 criterion = nn.MSELoss(reduction='sum')
-optimizer = opt.Adadelta(model.parameters())
+optimizer = opt.Adam(model.parameters(), lr=0.001)
 
-engine = CVAEEngine(net=model,
-                    trainloader=trainloader,
-                    trainset=plantVillageTrain,
-                    testloader=validationloader,
-                    testset=plantVillageTest,
-                    epochs=epochs,
-                    optimizer=optimizer,
-                    criterion=criterion,
-                    device=device)
+engine = CAEEngine(net=model,
+                   trainloader=trainloader,
+                   trainset=plantVillageTrain,
+                   testloader=validationloader,
+                   testset=plantVillageTest,
+                   epochs=epochs,
+                   optimizer=optimizer,
+                   criterion=criterion,
+                   device=device)
 
 net, best_epoch = engine.start()
 
