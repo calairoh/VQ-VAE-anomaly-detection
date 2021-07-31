@@ -4,15 +4,14 @@ import matplotlib
 import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
+import torch.optim as opt
 import torchvision.transforms as transforms
 
-from performance.classification import classification_performance_computation
+from models.CAE.ConvAE import ConvVAE
+from models.CVAE.CVAEEngine import CVAEEngine
 from src.data.PlantVillageDataset import PlantVillage
-from src.dataset import *
-from src.models import ConvVAE, ConvAE
-from src.train import start
+from data.dataset import *
 from src.utils import load_model
-from src.visualization import visualization
 
 """MatPlotLib"""
 matplotlib.style.use('ggplot')
@@ -43,8 +42,7 @@ stride_face_gen = 1
 padding_face_gen = 0
 
 # TRAINING
-lr = 0.005
-epochs = 100
+epochs = 10
 
 transform = transforms.Compose([
     transforms.Resize((img_height, img_width)),
@@ -86,16 +84,21 @@ MODEL TRAINING
 """
 
 # initialize the model
-baseModel = ConvAE.ConvVAE().to(device)
+model = ConvVAE().to(device)
+criterion = nn.MSELoss(reduction='sum')
+optimizer = opt.Adadelta(model.parameters())
 
-net, best_epoch = start(net=baseModel,
-                        trainloader=trainloader,
-                        trainset=plantVillageTrain,
-                        testloader=validationloader,
-                        testset=plantVillageTest,
-                        epochs=epochs,
-                        lr=lr,
-                        device=device)
+engine = CVAEEngine(net=model,
+                    trainloader=trainloader,
+                    trainset=plantVillageTrain,
+                    testloader=validationloader,
+                    testset=plantVillageTest,
+                    epochs=epochs,
+                    optimizer=optimizer,
+                    criterion=criterion,
+                    device=device)
+
+net, best_epoch = engine.start()
 
 if LOAD_BEST_MODEL:
     print('Loading epoch #{}'.format(best_epoch))
@@ -106,7 +109,7 @@ else:
 """
 MODEL VISUALIZATION
 """
-visualization(net, plantVillageTest, slot_num=2)
+engine.visualization(net, plantVillageTest, slot_num=2)
 
 """
 CLASSIFICATION TEST
@@ -115,5 +118,4 @@ thresholds = []
 for threshold in range(1000, 3000, 50):
     thresholds.append(threshold)
 
-criterion = nn.MSELoss(reduction='sum')
-classification_performance_computation(net, testloader, plantVillageTest, device, criterion, thresholds)
+engine.classification_performance_computation(net, testloader, plantVillageTest, thresholds)
