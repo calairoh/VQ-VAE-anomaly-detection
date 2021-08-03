@@ -13,6 +13,12 @@ def image_to_vid(images):
     imageio.mimsave('../outputs/images/generated_images.gif', images)
 
 
+def save_test_images(original_image, recon_image, segmented_image, count):
+    save_image(original_image.cpu(), f"../outputs/test/original{count}.jpg")
+    save_image(recon_image.cpu(), f"../outputs/test/recon{count}.jpg")
+    save_image(segmented_image.cpu(), f"../outputs/test/segmented{count}.jpg")
+
+
 def save_reconstructed_images(recon_images, epoch):
     save_image(recon_images.cpu(), f"../outputs/images/output{epoch}.jpg")
 

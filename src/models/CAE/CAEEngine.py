@@ -6,9 +6,10 @@ import torch
 from torchsummary import summary
 from torchvision.utils import make_grid
 from tqdm import tqdm
+from PIL import Image, ImageChops
 
 from metrics.classification import accuracy, precision, recall, tpr, fpr
-from utils import save_original_images, save_reconstructed_images, save_model, image_to_vid, save_loss_plot
+from utils import save_original_images, save_reconstructed_images, save_model, image_to_vid, save_loss_plot, save_test_images
 
 
 class CAEEngine:
@@ -108,7 +109,25 @@ class CAEEngine:
         val_loss = running_loss / counter
         return val_loss, recon_images, original_images
 
+
+    def segmentation_performance_computation(self, net, testloader, testset, threshold):
+        counter = 0
+        for i, data in tqdm(enumerate(testloader), total=len(testset)):
+            counter += 1
+            img = data['image']
+            img = img.to(self.device)
+            reconstruction = net(img)
+            loss = self.criterion(reconstruction, img)
+            loss.backward()
+
+            if loss > threshold:
+                diff = ImageChops.difference(img, reconstruction)
+                save_test_images(img, reconstruction, diff, counter)
+
     def classification_performance_computation(self, net, testloader, testset, thresholds):
+        max_acc = 0
+        best_th = 0
+
         res = []
         for i, data in tqdm(enumerate(testloader), total=len(testset)):
             img = data['image']
@@ -120,7 +139,15 @@ class CAEEngine:
             res.append({'loss': loss, 'realLabel': data['label']})
 
         for t in thresholds:
-            self.classify(res, t)
+            acc, pre, rec, tp_rate, fp_rate = self.classify(res, t)
+
+            if acc > max_acc:
+                max_acc = acc
+                best_th = t
+
+        return best_th
+
+
 
     def visualization(self, net, testset, slot_num=2):
         net.eval()
@@ -170,4 +197,6 @@ class CAEEngine:
         print('Recall: ' + str(rec))
         print('TPR: ' + str(tp_rate))
         print('FPR' + str(fp_rate))
+
+        return acc, pre, rec, tp_rate, fp_rate
 

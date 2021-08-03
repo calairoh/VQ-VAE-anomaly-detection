@@ -124,4 +124,9 @@ thresholds = []
 for threshold in range(1000, 3000, 50):
     thresholds.append(threshold)
 
-engine.classification_performance_computation(model, testloader, plantVillageTest, thresholds)
+best_th = engine.classification_performance_computation(model, testloader, plantVillageTest, thresholds)
+
+"""
+SEGMENTATION TEST
+"""
+engine.segmentation_performance_computation(model, testloader, plantVillageTest, best_th)
