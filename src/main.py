@@ -25,7 +25,9 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 """
 SETTINGS
 """
+TRAIN = True
 LOAD_BEST_MODEL = True
+PARAMS_TO_LOAD = 156
 
 """
 PARAMETERS
@@ -99,18 +101,21 @@ engine = CAEEngine(net=model,
                    criterion=criterion,
                    device=device)
 
-net, best_epoch = engine.start()
+if TRAIN:
+    model, best_epoch = engine.start()
 
-if LOAD_BEST_MODEL:
-    print('Loading epoch #{}'.format(best_epoch))
-    load_model(best_epoch)
+    if LOAD_BEST_MODEL:
+        print('Loading epoch #{}'.format(best_epoch))
+        load_model(best_epoch)
+    else:
+        print('Using net as-is')
 else:
-    print('Using net as-is')
+    load_model(PARAMS_TO_LOAD)
 
 """
 MODEL VISUALIZATION
 """
-engine.visualization(net, plantVillageTest, slot_num=2)
+engine.visualization(model, plantVillageTest, slot_num=2)
 
 """
 CLASSIFICATION TEST
@@ -119,4 +124,4 @@ thresholds = []
 for threshold in range(1000, 3000, 50):
     thresholds.append(threshold)
 
-engine.classification_performance_computation(net, testloader, plantVillageTest, thresholds)
+engine.classification_performance_computation(model, testloader, plantVillageTest, thresholds)
