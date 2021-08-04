@@ -8,7 +8,7 @@ class ConvAE(nn.Module):
     def __init__(self):
         super(ConvAE, self).__init__()
 
-        init_channels = 8
+        init_channels = 16
         image_channels = 3
         latent_dim = 16
 
