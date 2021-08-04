@@ -59,27 +59,27 @@ def build_segmentation_plot(original, reconstruction, diff, elaborated, count):
     plt.tight_layout()
     ax.set_title('Original')
     ax.axis('off')
-    plt.imshow(np.transpose(original, (1, 2, 0)))
+    plt.imshow(np.transpose(np.squeeze(original), (1, 2, 0)))
 
     # RECONSTRUCTION
     ax = plt.subplot(1, 4, 2)
     plt.tight_layout()
     ax.set_title('Reconstructed')
     ax.axis('off')
-    plt.imshow(np.transpose(np.squeeze(reconstruction), (1, 2, 0)))
+    plt.imshow(np.transpose(np.squeeze(reconstruction.detach().numpy()), (1, 2, 0)))
 
     # RAW DIFFERENCE
     ax = plt.subplot(1, 4, 3)
     plt.tight_layout()
     ax.set_title('Raw Diff')
     ax.axis('off')
-    plt.imshow(np.squeeze(diff))
+    plt.imshow(diff)
 
     # FINAL SEGMENTATION RESULT
     ax = plt.subplot(1, 4, 4)
     plt.tight_layout()
     ax.set_title('Result')
     ax.axis('off')
-    plt.imshow(np.squeeze(elaborated))
+    plt.imshow(elaborated)
 
     plt.savefig(f'../outputs/test/image{count}.jpg')

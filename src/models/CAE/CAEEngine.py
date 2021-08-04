@@ -127,7 +127,7 @@ class CAEEngine:
                 elaborated = ImageElaboration(diff)
                 elaborated.keep_only(RGB.RED)
                 elaborated.negative()
-                build_segmentation_plot(img, reconstruction, diff, elaborated, counter)
+                build_segmentation_plot(img, reconstruction, diff, elaborated.get(), counter)
 
     def classification_performance_computation(self, net, testloader, testset, thresholds):
         max_acc = 0
