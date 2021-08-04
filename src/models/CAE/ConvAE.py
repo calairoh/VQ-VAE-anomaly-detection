@@ -22,8 +22,7 @@ class ConvAE(nn.Module):
 
 
         # fully connected layers for learning representations
-        #self.flatten = nn.Flatten()
-        self.fc1 = nn.Linear(init_channels * 8, 64)
+        self.fc1 = nn.Linear(init_channels * 16, 64)
         self.fc_z = nn.Linear(64, latent_dim)
         self.fc2 = nn.Linear(latent_dim, 64)
 
