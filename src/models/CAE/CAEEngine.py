@@ -3,13 +3,16 @@ import sys
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
+import tensorflow as tf
 from torchsummary import summary
 from torchvision.utils import make_grid
+import torchvision.transforms as transforms
 from tqdm import tqdm
 from PIL import Image, ImageChops
 
 from metrics.classification import accuracy, precision, recall, tpr, fpr
-from utils import save_original_images, save_reconstructed_images, save_model, image_to_vid, save_loss_plot, save_test_images
+from utils import save_original_images, save_reconstructed_images, save_model, image_to_vid, save_loss_plot, \
+    save_test_images
 
 
 class CAEEngine:
@@ -109,7 +112,6 @@ class CAEEngine:
         val_loss = running_loss / counter
         return val_loss, recon_images, original_images
 
-
     def segmentation_performance_computation(self, net, testloader, testset, threshold):
         counter = 0
         for i, data in tqdm(enumerate(testloader), total=len(testset)):
@@ -120,8 +122,20 @@ class CAEEngine:
             loss = self.criterion(reconstruction, img)
             loss.backward()
 
+            # transformations
+            PilTrans = transforms.ToPILImage()
+
+            img1_arr = np.transpose(tf.squeeze(img).numpy(), [1, 2, 0]) * 255
+            img1_ui8 = img1_arr.astype(np.uint8)
+
+            img2_arr = np.transpose(np.squeeze(reconstruction).detach().numpy(), [1, 2, 0]) * 255
+            img2_ui8 = img2_arr.astype(np.uint8)
+
+            img1 = PilTrans(img1_ui8)
+            img2 = PilTrans(img2_ui8)
+
             if loss > threshold:
-                diff = ImageChops.difference(img, reconstruction)
+                diff = ImageChops.difference(img1, img2)
                 save_test_images(img, reconstruction, diff, counter)
 
     def classification_performance_computation(self, net, testloader, testset, thresholds):
@@ -146,8 +160,6 @@ class CAEEngine:
                 best_th = t
 
         return best_th
-
-
 
     def visualization(self, net, testset, slot_num=2):
         net.eval()
@@ -199,4 +211,3 @@ class CAEEngine:
         print('FPR' + str(fp_rate))
 
         return acc, pre, rec, tp_rate, fp_rate
-

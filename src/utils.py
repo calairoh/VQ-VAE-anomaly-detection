@@ -16,7 +16,7 @@ def image_to_vid(images):
 def save_test_images(original_image, recon_image, segmented_image, count):
     save_image(original_image.cpu(), f"../outputs/test/original{count}.jpg")
     save_image(recon_image.cpu(), f"../outputs/test/recon{count}.jpg")
-    save_image(segmented_image.cpu(), f"../outputs/test/segmented{count}.jpg")
+    segmented_image.save(f"../outputs/test/segmented{count}.jpg", "JPEG")
 
 
 def save_reconstructed_images(recon_images, epoch):
