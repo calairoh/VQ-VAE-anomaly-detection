@@ -43,8 +43,8 @@ class ConvAE(nn.Module):
         x = F.relu(self.enc3(x))
         x = self.maxPool(x)
         x = F.relu(self.enc4(x))
-        #x = self.maxPool(x)
-        #x = F.relu(self.enc5(x))
+        x = self.maxPool(x)
+        x = F.relu(self.enc5(x))
 
         batch, _, _, _ = x.shape
         x = F.adaptive_avg_pool2d(x, 1).reshape(batch, -1)
