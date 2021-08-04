@@ -3,17 +3,16 @@ import sys
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
-import tensorflow as tf
 from torchsummary import summary
 from torchvision.utils import make_grid
-
 from tqdm import tqdm
-from PIL import Image, ImageChops
 
 from image.ImageDifference import ImageDifference
+from image.ImageElaboration import ImageElaboration
+from image.RGB import RGB
 from metrics.classification import accuracy, precision, recall, tpr, fpr
 from utils import save_original_images, save_reconstructed_images, save_model, image_to_vid, save_loss_plot, \
-    save_test_images
+    build_segmentation_plot
 
 
 class CAEEngine:
@@ -125,7 +124,10 @@ class CAEEngine:
 
             if loss > threshold:
                 diff = ImageDifference(img, reconstruction).difference()
-                save_test_images(img, reconstruction, diff, counter)
+                elaborated = ImageElaboration(diff)
+                elaborated.keep_only(RGB.RED)
+                elaborated.negative()
+                build_segmentation_plot(img, reconstruction, diff, elaborated, counter)
 
     def classification_performance_computation(self, net, testloader, testset, thresholds):
         max_acc = 0
