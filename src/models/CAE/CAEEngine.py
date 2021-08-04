@@ -6,10 +6,11 @@ import torch
 import tensorflow as tf
 from torchsummary import summary
 from torchvision.utils import make_grid
-import torchvision.transforms as transforms
+
 from tqdm import tqdm
 from PIL import Image, ImageChops
 
+from image.ImageDifference import ImageDifference
 from metrics.classification import accuracy, precision, recall, tpr, fpr
 from utils import save_original_images, save_reconstructed_images, save_model, image_to_vid, save_loss_plot, \
     save_test_images
@@ -122,20 +123,8 @@ class CAEEngine:
             loss = self.criterion(reconstruction, img)
             loss.backward()
 
-            # transformations
-            PilTrans = transforms.ToPILImage()
-
-            img1_arr = np.transpose(tf.squeeze(img).numpy(), [1, 2, 0]) * 255
-            img1_ui8 = img1_arr.astype(np.uint8)
-
-            img2_arr = np.transpose(np.squeeze(reconstruction).detach().numpy(), [1, 2, 0]) * 255
-            img2_ui8 = img2_arr.astype(np.uint8)
-
-            img1 = PilTrans(img1_ui8)
-            img2 = PilTrans(img2_ui8)
-
             if loss > threshold:
-                diff = ImageChops.difference(img1, img2)
+                diff = ImageDifference(img, reconstruction).difference()
                 save_test_images(img, reconstruction, diff, counter)
 
     def classification_performance_computation(self, net, testloader, testset, thresholds):
