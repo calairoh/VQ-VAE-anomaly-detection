@@ -13,6 +13,10 @@ def image_to_vid(images):
     imageio.mimsave('../outputs/images/generated_images.gif', images)
 
 
+def save_elab_image(image, count):
+    image.save(f"../outputs/test/{count}-segmented-elaborated.jpg", "JPEG")
+
+
 def save_test_images(original_image, recon_image, segmented_image, count):
     save_image(original_image.cpu(), f"../outputs/test/{count}-original.jpg")
     save_image(recon_image.cpu(), f"../outputs/test/{count}-recon.jpg")
