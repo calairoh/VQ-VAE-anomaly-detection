@@ -25,9 +25,9 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 """
 SETTINGS
 """
-TRAIN = True
+TRAIN = False
 LOAD_BEST_MODEL = True
-PARAMS_TO_LOAD = 99
+PARAMS_TO_LOAD = 100
 
 """
 PARAMETERS
@@ -106,11 +106,11 @@ if TRAIN:
 
     if LOAD_BEST_MODEL:
         print('Loading epoch #{}'.format(best_epoch))
-        load_model(best_epoch)
+        load_model(model, best_epoch)
     else:
         print('Using net as-is')
 else:
-    load_model(PARAMS_TO_LOAD)
+    load_model(model, PARAMS_TO_LOAD)
 
 """
 MODEL VISUALIZATION

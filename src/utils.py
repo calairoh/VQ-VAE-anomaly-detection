@@ -47,8 +47,10 @@ def save_model(model, epoch):
     torch.save(model.state_dict(), f'../outputs/params/model-{epoch}')
 
 
-def load_model(epoch):
-    return torch.load(f'../outputs/params/model-{epoch}')
+def load_model(model, epoch):
+    model.load_state_dict(torch.load(f'../outputs/params/model-{epoch}'))
+    model.eval()
+    return model
 
 
 def build_segmentation_plot(original, reconstruction, diff, elaborated, count):
