@@ -16,7 +16,7 @@ from utils import save_original_images, save_reconstructed_images, save_model, i
 
 
 class CAEEngine:
-    def __init__(self, net, trainloader, trainset, testloader, testset, epochs, optimizer, criterion, device):
+    def __init__(self, net, trainloader, trainset, testloader, testset, epochs, optimizer, scheduler, criterion, device):
         self.net = net
         self.trainloader = trainloader
         self.trainset = trainset
@@ -25,6 +25,7 @@ class CAEEngine:
 
         self.epochs = epochs
         self.optimizer = optimizer
+        self.scheduler = scheduler
         self.criterion = criterion
         self.device = device
 
@@ -43,7 +44,7 @@ class CAEEngine:
         for epoch in range(self.epochs):
             print(f"Epoch {epoch + 1} of {self.epochs}")
             train_epoch_loss = self.train(
-                self.net, self.trainloader, self.trainset, self.device, self.optimizer, self.criterion
+                self.net, self.trainloader, self.trainset, self.device, self.optimizer, self.scheduler, self.criterion
             )
             valid_epoch_loss, recon_images, original_images = self.validate(
                 self.net, self.testloader, self.testset, self.device, self.criterion
@@ -74,7 +75,7 @@ class CAEEngine:
         return self.net, best_epoch
 
     @staticmethod
-    def train(model, dataloader, dataset, device, optimizer, criterion):
+    def train(model, dataloader, dataset, device, optimizer, scheduler, criterion):
         model.train()
         running_loss = 0.0
         counter = 0
@@ -88,6 +89,7 @@ class CAEEngine:
             loss.backward()
             running_loss += loss.item()
             optimizer.step()
+        scheduler.step()
         train_loss = running_loss / (counter * dataloader.batch_size)
         return train_loss
 

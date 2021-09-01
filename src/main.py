@@ -6,6 +6,7 @@ import torch
 import torch.nn as nn
 import torch.optim as opt
 import torchvision.transforms as transforms
+from torch.optim.lr_scheduler import ExponentialLR
 
 from models.CAE.CAEEngine import CAEEngine
 from models.CAE.ConvAE import ConvAE
@@ -48,7 +49,7 @@ stride_face_gen = 1
 padding_face_gen = 0
 
 # TRAINING
-epochs = 100
+epochs = 200
 
 transform = transforms.Compose([
     transforms.Resize((img_height, img_width)),
@@ -92,7 +93,8 @@ MODEL TRAINING
 # initialize the model
 model = ConvAE().to(device)
 criterion = nn.MSELoss(reduction='sum')
-optimizer = opt.Adadelta(model.parameters())
+optimizer = opt.Adam(model.parameters(), lr=0.01)
+scheduler = ExponentialLR(optimizer, gamma=0.9)
 
 engine = CAEEngine(net=model,
                    trainloader=trainloader,
@@ -101,6 +103,7 @@ engine = CAEEngine(net=model,
                    testset=plantVillageTest,
                    epochs=epochs,
                    optimizer=optimizer,
+                   scheduler=scheduler,
                    criterion=criterion,
                    device=device)
 

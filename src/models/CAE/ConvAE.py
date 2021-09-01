@@ -10,7 +10,8 @@ class ConvAE(nn.Module):
 
         init_channels = 16
         image_channels = 3
-        latent_dim = 32
+        latent_dim = 100
+        dense_dim = 128
 
         # encoder
         self.enc1 = nn.Conv2d(image_channels, init_channels, kernel_size=4, stride=1, padding=0)
@@ -22,12 +23,12 @@ class ConvAE(nn.Module):
 
 
         # fully connected layers for learning representations
-        self.fc1 = nn.Linear(init_channels * 16, 64)
-        self.fc_z = nn.Linear(64, latent_dim)
-        self.fc2 = nn.Linear(latent_dim, 64)
+        self.fc1 = nn.Linear(init_channels * 8, dense_dim)
+        self.fc_z = nn.Linear(dense_dim, latent_dim)
+        self.fc2 = nn.Linear(latent_dim, dense_dim)
 
         # decoder
-        self.dec1 = nn.ConvTranspose2d(64, init_channels * 8, kernel_size=4, stride=1, padding=0)
+        self.dec1 = nn.ConvTranspose2d(dense_dim, init_channels * 8, kernel_size=4, stride=1, padding=0)
         self.dec2 = nn.ConvTranspose2d(init_channels * 8, init_channels * 4, kernel_size=4, stride=4, padding=0)
         self.dec3 = nn.ConvTranspose2d(init_channels * 4, init_channels * 2, kernel_size=4, stride=4, padding=0)
         self.dec4 = nn.ConvTranspose2d(init_channels * 2, init_channels, kernel_size=4, stride=2, padding=1)
@@ -42,8 +43,8 @@ class ConvAE(nn.Module):
         x = F.relu(self.enc3(x))
         x = self.maxPool(x)
         x = F.relu(self.enc4(x))
-        x = self.maxPool(x)
-        x = F.relu(self.enc5(x))
+        #x = self.maxPool(x)
+        #x = F.relu(self.enc5(x))
 
         batch, _, _, _ = x.shape
         x = F.adaptive_avg_pool2d(x, 1).reshape(batch, -1)
@@ -51,7 +52,7 @@ class ConvAE(nn.Module):
         # get `mu` and `log_var`
         x = self.fc_z(hidden)
         x = self.fc2(x)
-        x = x.view(-1, 64, 1, 1)
+        x = x.view(-1, 128, 1, 1)
 
         # decoding
         x = F.relu(self.dec1(x))
