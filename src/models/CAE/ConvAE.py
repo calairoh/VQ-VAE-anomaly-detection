@@ -8,9 +8,9 @@ class ConvAE(nn.Module):
     def __init__(self):
         super(ConvAE, self).__init__()
 
-        init_channels = 8
+        init_channels = 16
         image_channels = 3
-        latent_dim = 16
+        latent_dim = 32
 
         # encoder
         self.enc1 = nn.Conv2d(image_channels, init_channels, kernel_size=4, stride=1, padding=0)

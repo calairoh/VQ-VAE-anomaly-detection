@@ -19,13 +19,16 @@ matplotlib.style.use('ggplot')
 matplotlib.use('TkAgg')
 plt.ion()
 
+"""Reproducibility"""
+torch.manual_seed(0)
+
 """CUDA"""
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 """
 SETTINGS
 """
-TRAIN = False
+TRAIN = True
 LOAD_BEST_MODEL = True
 PARAMS_TO_LOAD = 100
 
@@ -89,7 +92,7 @@ MODEL TRAINING
 # initialize the model
 model = ConvAE().to(device)
 criterion = nn.MSELoss(reduction='sum')
-optimizer = opt.Adam(model.parameters(), lr=0.001)
+optimizer = opt.Adadelta(model.parameters())
 
 engine = CAEEngine(net=model,
                    trainloader=trainloader,

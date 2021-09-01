@@ -122,12 +122,12 @@ class CAEEngine:
             loss = self.criterion(reconstruction, img)
             loss.backward()
 
-            if loss > threshold:
-                diff = ImageDifference(img, reconstruction).difference()
-                elaborated = ImageElaboration(diff)
-                elaborated.keep_only(RGB.RED)
-                elaborated.negative()
-                build_segmentation_plot(img, reconstruction, diff, elaborated.get(), counter)
+            #if loss > threshold:
+            diff = ImageDifference(img, reconstruction).difference()
+            elaborated = ImageElaboration(diff)
+            elaborated.keep_only(RGB.RED)
+            elaborated.negative()
+            build_segmentation_plot(img, reconstruction, diff, elaborated.get(), counter)
 
     def classification_performance_computation(self, net, testloader, testset, thresholds):
         max_acc = 0
