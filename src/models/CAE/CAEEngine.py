@@ -76,6 +76,8 @@ class CAEEngine:
 
     @staticmethod
     def train(model, dataloader, dataset, device, optimizer, scheduler, criterion):
+        lr = scheduler.get_last_lr()
+        print('Current lr: #{}'.format(lr))
         model.train()
         running_loss = 0.0
         counter = 0

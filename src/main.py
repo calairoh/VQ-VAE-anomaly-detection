@@ -93,8 +93,8 @@ MODEL TRAINING
 # initialize the model
 model = ConvAE().to(device)
 criterion = nn.MSELoss(reduction='sum')
-optimizer = opt.Adam(model.parameters(), lr=0.01)
-scheduler = ExponentialLR(optimizer, gamma=0.9)
+optimizer = opt.Adam(model.parameters(), lr=0.1)
+scheduler = ExponentialLR(optimizer, gamma=0.95)
 
 engine = CAEEngine(net=model,
                    trainloader=trainloader,
