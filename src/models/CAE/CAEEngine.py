@@ -91,7 +91,7 @@ class CAEEngine:
             loss.backward()
             running_loss += loss.item()
             optimizer.step()
-        scheduler.step()
+        #scheduler.step()
         train_loss = running_loss / (counter * dataloader.batch_size)
         return train_loss
 

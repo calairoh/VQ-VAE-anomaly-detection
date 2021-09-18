@@ -8,9 +8,9 @@ class ConvAE(nn.Module):
     def __init__(self):
         super(ConvAE, self).__init__()
 
-        init_channels = 16
+        init_channels = 8
         image_channels = 3
-        latent_dim = 100
+        latent_dim = 32
         dense_dim = 128
 
         # encoder
@@ -23,7 +23,9 @@ class ConvAE(nn.Module):
 
 
         # fully connected layers for learning representations
-        self.fc1 = nn.Linear(init_channels * 8, dense_dim)
+        self.flatten = nn.Flatten()
+        # self.fc1 = nn.Linear(init_channels * 8, dense_dim)
+        self.fc1 = nn.Linear(12800, dense_dim)
         self.fc_z = nn.Linear(dense_dim, latent_dim)
         self.fc2 = nn.Linear(latent_dim, dense_dim)
 
@@ -43,11 +45,12 @@ class ConvAE(nn.Module):
         x = F.relu(self.enc3(x))
         x = self.maxPool(x)
         x = F.relu(self.enc4(x))
-        #x = self.maxPool(x)
-        #x = F.relu(self.enc5(x))
+        x = self.maxPool(x)
+        x = F.relu(self.enc5(x))
 
         batch, _, _, _ = x.shape
-        x = F.adaptive_avg_pool2d(x, 1).reshape(batch, -1)
+        # x = F.adaptive_avg_pool2d(x, 1).reshape(batch, -1)
+        x = self.flatten(x)
         hidden = self.fc1(x)
         # get `mu` and `log_var`
         x = self.fc_z(hidden)
