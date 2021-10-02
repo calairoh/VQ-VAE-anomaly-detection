@@ -1,5 +1,3 @@
-import os
-
 import matplotlib
 import matplotlib.pyplot as plt
 import torch
@@ -8,11 +6,12 @@ import torch.optim as opt
 import torchvision.transforms as transforms
 from torch.optim.lr_scheduler import ExponentialLR
 
+from data import DatasetGenerator
 from models.CAE.CAEEngine import CAEEngine
 from models.CAE.ConvAE import ConvAE
-from models.CVAE.CVAEEngine import CVAEEngine
-from src.data.PlantVillageDataset import PlantVillage
 from data.dataset import *
+from models.CVAE.CVAEEngine import CVAEEngine
+from models.CVAE.ConvVAE import ConvVAE
 from src.utils import load_model
 
 """MatPlotLib"""
@@ -49,7 +48,7 @@ stride_face_gen = 1
 padding_face_gen = 0
 
 # TRAINING
-epochs = 200
+epochs = 100
 
 transform = transforms.Compose([
     transforms.Resize((img_height, img_width)),
@@ -60,27 +59,9 @@ transform = transforms.Compose([
 """
 DATASET GENERATION
 """
-# Plant Village dataset
-if not os.path.exists('../data/plantvillage/cherry/train/data.csv'):
-    PlantVillage.create_csv("../data/plantvillage/cherry/train")
 
-if not os.path.exists('../data/plantvillage/cherry/val/data.csv'):
-    PlantVillage.create_csv("../data/plantvillage/cherry/val")
-
-if not os.path.exists('../data/plantvillage/cherry/test/data.csv'):
-    PlantVillage.create_csv("../data/plantvillage/cherry/test")
-
-plantVillageTrain = PlantVillage(csv_file='../data/plantvillage/cherry/train/data.csv',
-                                 root_dir='../data/plantvillage/cherry/train',
-                                 transform=transform)
-
-plantVillageVal = PlantVillage(csv_file='../data/plantvillage/cherry/val/data.csv',
-                               root_dir='../data/plantvillage/cherry/val',
-                               transform=transform)
-
-plantVillageTest = PlantVillage(csv_file='../data/plantvillage/cherry/test/data.csv',
-                                root_dir='../data/plantvillage/cherry/test',
-                                transform=transform)
+plant = 'cherry'
+plantVillageTrain, plantVillageVal, plantVillageTest = DatasetGenerator.generateDataset(plant, transform)
 
 trainloader = get_training_dataloader(plantVillageTrain, batch_size)
 validationloader = get_validation_dataloader(plantVillageVal, batch_size=1)
@@ -91,21 +72,20 @@ MODEL TRAINING
 """
 
 # initialize the model
-model = ConvAE().to(device)
+model = ConvVAE().to(device)
 criterion = nn.MSELoss(reduction='sum')
-optimizer = opt.Adadelta(model.parameters())
+optimizer = opt.Adadelta(model.parameters(), lr=1.5)
 scheduler = ExponentialLR(optimizer, gamma=0.99)
 
-engine = CAEEngine(net=model,
-                   trainloader=trainloader,
-                   trainset=plantVillageTrain,
-                   testloader=validationloader,
-                   testset=plantVillageTest,
-                   epochs=epochs,
-                   optimizer=optimizer,
-                   scheduler=scheduler,
-                   criterion=criterion,
-                   device=device)
+engine = CVAEEngine(net=model,
+                    trainloader=trainloader,
+                    trainset=plantVillageTrain,
+                    testloader=validationloader,
+                    testset=plantVillageTest,
+                    epochs=epochs,
+                    optimizer=optimizer,
+                    criterion=criterion,
+                    device=device)
 
 if TRAIN:
     model, best_epoch = engine.start()

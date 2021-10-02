@@ -8,7 +8,7 @@ class ConvVAE(nn.Module):
     def __init__(self):
         super(ConvVAE, self).__init__()
 
-        init_channels = 16
+        init_channels = 8
         image_channels = 3
         latent_dim = 16
 
@@ -40,7 +40,7 @@ class ConvVAE(nn.Module):
         :param mu: mean from the encoder's latent space
         :param log_var: log variance from the encoder's latent space
         """
-        std = torch.exp(0.5 * log_var)  # standard deviation
+        std = torch.exp(0.1 * log_var)  # standard deviation
         eps = torch.randn_like(std)  # `randn_like` as we need the same size
         sample = mu + (eps * std)  # sampling
         return sample

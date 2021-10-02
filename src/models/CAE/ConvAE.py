@@ -10,7 +10,7 @@ class ConvAE(nn.Module):
 
         init_channels = 8
         image_channels = 3
-        latent_dim = 32
+        latent_dim = 16
         dense_dim = 128
 
         # encoder
@@ -25,7 +25,7 @@ class ConvAE(nn.Module):
         # fully connected layers for learning representations
         self.flatten = nn.Flatten()
         # self.fc1 = nn.Linear(init_channels * 8, dense_dim)
-        self.fc1 = nn.Linear(12800, dense_dim)
+        self.fc1 = nn.Linear(3200, dense_dim)
         self.fc_z = nn.Linear(dense_dim, latent_dim)
         self.fc2 = nn.Linear(latent_dim, dense_dim)
 
@@ -47,6 +47,7 @@ class ConvAE(nn.Module):
         x = F.relu(self.enc4(x))
         x = self.maxPool(x)
         x = F.relu(self.enc5(x))
+        x = self.maxPool(x)
 
         batch, _, _, _ = x.shape
         # x = F.adaptive_avg_pool2d(x, 1).reshape(batch, -1)
@@ -65,3 +66,25 @@ class ConvAE(nn.Module):
         reconstruction = torch.sigmoid(self.dec5(x))
 
         return reconstruction
+
+    # def __init__(self):
+    #     super(ConvAutoencoder, self).__init__()
+    #
+    #     # Encoder
+    #     self.conv1 = nn.Conv2d(3, 16, 3, padding=1)
+    #     self.conv2 = nn.Conv2d(16, 4, 3, padding=1)
+    #     self.pool = nn.MaxPool2d(2, 2)
+    #
+    #     # Decoder
+    #     self.t_conv1 = nn.ConvTranspose2d(4, 16, 2, stride=2)
+    #     self.t_conv2 = nn.ConvTranspose2d(16, 3, 2, stride=2)
+    #
+    # def forward(self, x):
+    #     x = F.relu(self.conv1(x))
+    #     x = self.pool(x)
+    #     x = F.relu(self.conv2(x))
+    #     x = self.pool(x)
+    #     x = F.relu(self.t_conv1(x))
+    #     x = F.sigmoid(self.t_conv2(x))
+    #
+    #     return x
