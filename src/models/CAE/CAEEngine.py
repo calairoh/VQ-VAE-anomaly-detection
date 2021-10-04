@@ -6,17 +6,20 @@ import torch
 from torchsummary import summary
 from torchvision.utils import make_grid
 from tqdm import tqdm
+from sklearn.metrics import roc_curve, roc_auc_score
+from sklearn.preprocessing import MinMaxScaler
 
 from image.ImageDifference import ImageDifference
 from image.ImageElaboration import ImageElaboration
 from image.RGB import RGB
 from metrics.classification import accuracy, precision, recall, tpr, fpr
 from utils import save_original_images, save_reconstructed_images, save_model, image_to_vid, save_loss_plot, \
-    build_segmentation_plot
+    build_segmentation_plot, plot_roc_curve
 
 
 class CAEEngine:
-    def __init__(self, net, trainloader, trainset, testloader, testset, epochs, optimizer, scheduler, criterion, device):
+    def __init__(self, net, trainloader, trainset, testloader, testset, epochs, optimizer, scheduler, criterion,
+                 device):
         self.net = net
         self.trainloader = trainloader
         self.trainset = trainset
@@ -91,7 +94,7 @@ class CAEEngine:
             loss.backward()
             running_loss += loss.item()
             optimizer.step()
-        #scheduler.step()
+        # scheduler.step()
         train_loss = running_loss / (counter * dataloader.batch_size)
         return train_loss
 
@@ -126,7 +129,7 @@ class CAEEngine:
             loss = self.criterion(reconstruction, img)
             loss.backward()
 
-            #if loss > threshold:
+            # if loss > threshold:
             diff = ImageDifference(img, reconstruction).difference()
             elaborated = ImageElaboration(diff)
             elaborated.keep_only(RGB.RED)
@@ -155,6 +158,29 @@ class CAEEngine:
                 best_th = t
 
         return best_th
+
+    def roc_curve_computation(self, net, testloader, testset):
+        y_true = []
+        y_pred = []
+        for i, data in tqdm(enumerate(testloader), total=len(testset)):
+            img = data['image']
+            img = img.to(self.device)
+            reconstruction = net(img)
+            loss = self.criterion(reconstruction, img)
+            loss.backward()
+
+            y_pred.append(float(loss))
+            y_true.append(int(data['label']))
+
+        y_pred = np.array(y_pred)
+        y_true = np.array(y_true)
+        norm_pred = (y_pred - min(y_pred)) / (max(y_pred) - min(y_pred))
+
+        fpr, tpr, threshold = roc_curve(y_true, norm_pred)
+
+        plot_roc_curve(fpr, tpr)
+
+        print(f'ROC AUC score: {roc_auc_score(y_true, norm_pred)}')
 
     def visualization(self, net, testset, slot_num=2):
         net.eval()

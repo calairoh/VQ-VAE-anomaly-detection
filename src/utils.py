@@ -85,3 +85,16 @@ def build_segmentation_plot(original, reconstruction, diff, elaborated, count):
     plt.imshow(elaborated)
 
     plt.savefig(f'../outputs/test/image{count}.jpg')
+
+
+def plot_roc_curve(fpr, tpr):
+    plt.subplots(1, figsize=(10, 10))
+    plt.title('Receiver Operating Characteristic - DecisionTree')
+    plt.plot(fpr, tpr)
+    plt.plot([0, 1], ls="--")
+    plt.plot([0, 0], [1, 0], c=".7"), plt.plot([1, 1], c=".7")
+    plt.ylabel('True Positive Rate')
+    plt.xlabel('False Positive Rate')
+    plt.show()
+
+    plt.savefig(f'../outputs/images/roc_auc.jpg')

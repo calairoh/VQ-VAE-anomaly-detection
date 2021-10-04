@@ -12,7 +12,7 @@ from models.CAE.ConvAE import ConvAE
 from data.dataset import *
 from models.CVAE.CVAEEngine import CVAEEngine
 from models.CVAE.ConvVAE import ConvVAE
-from src.utils import load_model
+from utils import load_model
 
 """MatPlotLib"""
 matplotlib.style.use('ggplot')
@@ -37,7 +37,7 @@ PARAMETERS
 """
 # DATASET
 validationSplit = 0.1
-batch_size = 4
+batch_size = 16
 img_width = 256
 img_height = 256
 
@@ -72,20 +72,21 @@ MODEL TRAINING
 """
 
 # initialize the model
-model = ConvVAE().to(device)
+model = ConvAE().to(device)
 criterion = nn.MSELoss(reduction='sum')
-optimizer = opt.Adadelta(model.parameters(), lr=1.5)
+optimizer = opt.Adam(model.parameters(), lr=0.001)
 scheduler = ExponentialLR(optimizer, gamma=0.99)
 
-engine = CVAEEngine(net=model,
-                    trainloader=trainloader,
-                    trainset=plantVillageTrain,
-                    testloader=validationloader,
-                    testset=plantVillageTest,
-                    epochs=epochs,
-                    optimizer=optimizer,
-                    criterion=criterion,
-                    device=device)
+engine = CAEEngine(net=model,
+                   trainloader=trainloader,
+                   trainset=plantVillageTrain,
+                   testloader=validationloader,
+                   testset=plantVillageTest,
+                   epochs=epochs,
+                   optimizer=optimizer,
+                   scheduler=scheduler,
+                   criterion=criterion,
+                   device=device)
 
 if TRAIN:
     model, best_epoch = engine.start()
@@ -110,9 +111,10 @@ thresholds = []
 for threshold in range(1000, 3000, 50):
     thresholds.append(threshold)
 
-best_th = engine.classification_performance_computation(model, testloader, plantVillageTest, thresholds)
+# best_th = engine.classification_performance_computation(model, testloader, plantVillageTest, thresholds)
+engine.roc_curve_computation(model, testloader, plantVillageTest)
 
 """
 SEGMENTATION TEST
 """
-engine.segmentation_performance_computation(model, testloader, plantVillageTest, best_th)
+# engine.segmentation_performance_computation(model, testloader, plantVillageTest, best_th)
