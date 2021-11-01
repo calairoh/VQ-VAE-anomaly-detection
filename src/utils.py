@@ -10,25 +10,25 @@ to_pil_image = transforms.ToPILImage()
 
 def image_to_vid(images):
     images = [np.array(to_pil_image(img)) for img in images]
-    imageio.mimsave('../outputs/images/generated_images.gif', images)
+    imageio.mimsave('./outputs/images/generated_images.gif', images)
 
 
 def save_elab_image(image, count):
-    image.save(f"../outputs/test/{count}-segmented-elaborated.jpg", "JPEG")
+    image.save(f"./outputs/test/{count}-segmented-elaborated.jpg", "JPEG")
 
 
 def save_test_images(original_image, recon_image, segmented_image, count):
-    save_image(original_image.cpu(), f"../outputs/test/{count}-original.jpg")
-    save_image(recon_image.cpu(), f"../outputs/test/{count}-recon.jpg")
-    segmented_image.save(f"../outputs/test/{count}-segmented.jpg", "JPEG")
+    save_image(original_image.cpu(), f"./outputs/test/{count}-original.jpg")
+    save_image(recon_image.cpu(), f"./outputs/test/{count}-recon.jpg")
+    segmented_image.save(f"./outputs/test/{count}-segmented.jpg", "JPEG")
 
 
 def save_reconstructed_images(recon_images, epoch):
-    save_image(recon_images.cpu(), f"../outputs/images/output{epoch}.jpg")
+    save_image(recon_images.cpu(), f"./outputs/images/output{epoch}.jpg")
 
 
 def save_original_images(original_images, epoch):
-    save_image(original_images.cpu(), f"../outputs/images/output{epoch}-or.jpg")
+    save_image(original_images.cpu(), f"./outputs/images/output{epoch}-or.jpg")
 
 
 def save_loss_plot(train_loss, valid_loss):
@@ -39,16 +39,16 @@ def save_loss_plot(train_loss, valid_loss):
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
     plt.legend()
-    plt.savefig('../outputs/images/loss.jpg')
+    plt.savefig('./outputs/images/loss.jpg')
     plt.show()
 
 
 def save_model(model, epoch):
-    torch.save(model.state_dict(), f'../outputs/params/model-{epoch}')
+    torch.save(model.state_dict(), f'./outputs/params/model-{epoch}')
 
 
 def load_model(model, epoch):
-    model.load_state_dict(torch.load(f'../outputs/params/model-{epoch}'))
+    model.load_state_dict(torch.load(f'./outputs/params/model-{epoch}'))
     model.eval()
     return model
 
@@ -84,7 +84,7 @@ def build_segmentation_plot(original, reconstruction, diff, elaborated, count):
     ax.axis('off')
     plt.imshow(elaborated)
 
-    plt.savefig(f'../outputs/test/image{count}.jpg')
+    plt.savefig(f'./outputs/test/image{count}.jpg')
 
 
 def plot_roc_curve(fpr, tpr):
@@ -97,4 +97,4 @@ def plot_roc_curve(fpr, tpr):
     plt.xlabel('False Positive Rate')
     plt.show()
 
-    plt.savefig(f'../outputs/images/roc_auc.jpg')
+    plt.savefig(f'./outputs/images/roc_auc.jpg')
