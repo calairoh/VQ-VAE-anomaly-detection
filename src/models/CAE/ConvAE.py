@@ -65,7 +65,7 @@ class ConvAE(nn.Module):
         x = F.relu(self.dec4(x))
         reconstruction = torch.sigmoid(self.dec5(x))
 
-        return reconstruction
+        return reconstruction, 0, 0
 
     # def __init__(self):
     #     super(ConvAutoencoder, self).__init__()

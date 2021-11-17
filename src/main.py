@@ -7,6 +7,7 @@ import torchvision.transforms as transforms
 from torch.optim.lr_scheduler import ExponentialLR
 
 from data import DatasetGenerator
+from engine.Engine import Engine
 from models.CAE.CAEEngine import CAEEngine
 from models.CAE.ConvAE import ConvAE
 from data.dataset import *
@@ -48,7 +49,7 @@ stride_face_gen = 1
 padding_face_gen = 0
 
 # TRAINING
-epochs = 200
+epochs = 1
 
 transform = transforms.Compose([
     transforms.Resize((img_height, img_width)),
@@ -76,17 +77,20 @@ model = ConvAE().to(device)
 criterion = nn.MSELoss(reduction='sum')
 optimizer = opt.Adam(model.parameters(), lr=0.001)
 scheduler = ExponentialLR(optimizer, gamma=0.99)
+compute_loss = lambda a, b, c : a
+input_shape = (3, img_width, img_height)
 
-engine = CAEEngine(net=model,
-                   trainloader=trainloader,
-                   trainset=plantVillageTrain,
-                   testloader=validationloader,
-                   testset=plantVillageTest,
-                   epochs=epochs,
-                   optimizer=optimizer,
-                   scheduler=scheduler,
-                   criterion=criterion,
-                   device=device)
+engine = Engine(model=model,
+                trainloader=trainloader,
+                trainset=plantVillageTrain,
+                testloader=validationloader,
+                testset=plantVillageTest,
+                epochs=epochs,
+                optimizer=optimizer,
+                criterion=criterion,
+                input_shape=input_shape,
+                compute_loss=compute_loss,
+                device=device)
 
 if TRAIN:
     model, best_epoch = engine.start()
@@ -102,7 +106,7 @@ else:
 """
 MODEL VISUALIZATION
 """
-engine.visualization(model, plantVillageTest, slot_num=2)
+engine.visualization()
 
 """
 CLASSIFICATION TEST
@@ -111,8 +115,7 @@ thresholds = []
 for threshold in range(1000, 3000, 50):
     thresholds.append(threshold)
 
-# best_th = engine.classification_performance_computation(model, testloader, plantVillageTest, thresholds)
-engine.roc_curve_computation(model, testloader, plantVillageTest)
+engine.roc_curve_computation(testloader, plantVillageTest)
 
 """
 SEGMENTATION TEST
