@@ -10,6 +10,7 @@ from data import DatasetGenerator
 from engine.Engine import Engine
 from models.CAE.CAEEngine import CAEEngine
 from models.CAE.ConvAE import ConvAE
+from models.VQVAE.VQVAEModel import VQVAEModel
 from data.dataset import *
 from models.CVAE.CVAEEngine import CVAEEngine
 from models.CVAE.ConvVAE import ConvVAE
@@ -72,10 +73,26 @@ testloader = get_test_dataloader(plantVillageTest, batch_size=1)
 MODEL TRAINING
 """
 
+num_training_updates = 15000
+
+num_hiddens = 128
+num_residual_hiddens = 32
+num_residual_layers = 2
+
+embedding_dim = 64
+num_embeddings = 512
+
+commitment_cost = 0.25
+
+decay = 0.99
+
+learning_rate = 1e-3
+
 # initialize the model
-model = ConvAE().to(device)
+model = VQVAEModel(num_hiddens, num_residual_layers, num_residual_hiddens,
+    num_embeddings, embedding_dim, commitment_cost, decay).to(device)
 criterion = nn.MSELoss(reduction='sum')
-optimizer = opt.Adam(model.parameters(), lr=0.001)
+optimizer = opt.Adam(model.parameters(), lr=learning_rate)
 scheduler = ExponentialLR(optimizer, gamma=0.99)
 compute_loss = lambda a, b, c : a
 input_shape = (3, img_width, img_height)
