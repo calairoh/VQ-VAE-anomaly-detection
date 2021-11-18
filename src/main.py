@@ -49,7 +49,7 @@ stride_face_gen = 1
 padding_face_gen = 0
 
 # TRAINING
-epochs = 1
+epochs = 2
 
 transform = transforms.Compose([
     transforms.Resize((img_height, img_width)),

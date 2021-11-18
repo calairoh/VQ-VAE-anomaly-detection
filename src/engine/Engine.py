@@ -57,6 +57,7 @@ class Engine:
 
       epoch_info.save()
       training_info.add_grid_image(recon_images=recon_images)
+      training_info.add_epoch_info(epoch_info=epoch_info)
 
       print(f"Train Loss: {train_epoch_loss:.4f}")
       print(f"Val Loss: {valid_epoch_loss:.4f}")
