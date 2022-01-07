@@ -1,10 +1,14 @@
 import matplotlib
+import os
 import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
 import torch.optim as opt
 import torchvision.transforms as transforms
 from torch.optim.lr_scheduler import ExponentialLR
+from torch.nn.parallel import DistributedDataParallel as DDP
+import torch.distributed as dist
+import torch.multiprocessing as mp
 
 from data import DatasetGenerator
 from engine.Engine import Engine
@@ -14,7 +18,7 @@ from models.VQVAE.VQVAEModel import VQVAEModel
 from data.dataset import *
 from models.CVAE.CVAEEngine import CVAEEngine
 from models.CVAE.ConvVAE import ConvVAE
-from utils import load_model
+from utils import load_model, setup
 
 """MatPlotLib"""
 matplotlib.style.use('ggplot')
@@ -32,7 +36,7 @@ SETTINGS
 """
 TRAIN = True
 LOAD_BEST_MODEL = True
-PARAMS_TO_LOAD = 100
+PARAMS_TO_LOAD = 9
 
 """
 PARAMETERS
@@ -50,7 +54,7 @@ stride_face_gen = 1
 padding_face_gen = 0
 
 # TRAINING
-epochs = 2
+epochs = 10
 
 transform = transforms.Compose([
     transforms.Resize((img_height, img_width)),
@@ -75,7 +79,7 @@ MODEL TRAINING
 
 num_training_updates = 15000
 
-num_hiddens = 128
+num_hiddens = 256
 num_residual_hiddens = 32
 num_residual_layers = 2
 
@@ -92,12 +96,14 @@ learning_rate = 1e-3
 model = VQVAEModel(num_hiddens, num_residual_layers, num_residual_hiddens,
     num_embeddings, embedding_dim, commitment_cost, decay).to(device)
 criterion = nn.MSELoss(reduction='sum')
-optimizer = opt.Adam(model.parameters(), lr=learning_rate)
+optimizer = opt.Adam(model.parameters(), lr=learning_rate, amsgrad=False)
 scheduler = ExponentialLR(optimizer, gamma=0.99)
 compute_loss = lambda a, b, c : a
 input_shape = (3, img_width, img_height)
 
-engine = Engine(model=model,
+ddp_model = torch.nn.DataParallel(model)
+
+engine = Engine(model=ddp_model,
                 trainloader=trainloader,
                 trainset=plantVillageTrain,
                 testloader=validationloader,
@@ -137,4 +143,4 @@ engine.roc_curve_computation(testloader, plantVillageTest)
 """
 SEGMENTATION TEST
 """
-# engine.segmentation_performance_computation(model, testloader, plantVillageTest, best_th)
+engine.segmentation_performance_computation(model, testloader, plantVillageTest)

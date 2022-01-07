@@ -3,12 +3,17 @@ import torch
 import numpy as np
 from tqdm import tqdm
 from torchsummary import summary
+import torch.nn.functional as F
+
+from image.ImageDifference import ImageDifference
+from image.ImageElaboration import ImageElaboration
+from image.RGB import RGB
 
 from helpers.EpochInfo import EpochInfo
 from helpers.TrainingInfo import TrainingInfo
 from helpers.PlotManager import PlotManager
 
-from utils import plot_roc_curve
+from utils import plot_roc_curve, build_segmentation_plot
 from sklearn.metrics import roc_curve, roc_auc_score
 
 class Engine:
@@ -59,8 +64,8 @@ class Engine:
       training_info.add_grid_image(recon_images=recon_images)
       training_info.add_epoch_info(epoch_info=epoch_info)
 
-      print(f"Train Loss: {train_epoch_loss:.4f}")
-      print(f"Val Loss: {valid_epoch_loss:.4f}")
+      print(f"Train Loss: {train_epoch_loss*1000:.4f}")
+      print(f"Val Loss: {valid_epoch_loss*1000:.4f}")
 
     training_info.save_validation_gif_results()
     training_info.save_loss_plot()
@@ -73,14 +78,17 @@ class Engine:
     self.model.train()
     running_loss = 0.0
     counter = 0
+
     for i, data in tqdm(enumerate(self.trainloader), total=int(len(self.trainset) / self.trainloader.batch_size)):
       counter += 1
       data = data['image']
       data = data.to(self.device)
       self.optimizer.zero_grad()
-      reconstruction, mu, logvar = self.model(data)
-      bce_loss = self.criterion(reconstruction, data)
-      loss = self.compute_loss(bce_loss, mu, logvar)
+      reconstruction, loss, perplexity = self.model(data)
+      #bce_loss = self.criterion(reconstruction, data)
+      #loss = self.compute_loss(bce_loss, mu, logvar)
+      recon_error = F.mse_loss(reconstruction, data)
+      loss = recon_error + loss
       loss.backward()
       running_loss += loss.item()
       self.optimizer.step()
@@ -96,9 +104,11 @@ class Engine:
         counter += 1
         data = data['image']
         data = data.to(self.device)
-        reconstruction, mu, logvar = self.model(data)
-        bce_loss = self.criterion(reconstruction, data)
-        loss = self.compute_loss(bce_loss, mu, logvar)
+        reconstruction, loss, _ = self.model(data)
+        #bce_loss = self.criterion(reconstruction, data)
+        #loss = self.compute_loss(bce_loss, mu, logvar)
+        recon_error = F.mse_loss(reconstruction, data)
+        loss = recon_error + loss
         running_loss += loss.item()
 
         # save the last batch input and output of every epoch
@@ -118,9 +128,9 @@ class Engine:
     for i, data in tqdm(enumerate(testloader), total=len(testset)):
         img = data['image']
         img = img.to(self.device)
-        reconstruction, mu, logvar = self.model(img)
-        loss = self.criterion(reconstruction, img)
-        loss.backward()
+        reconstruction, loss, _ = self.model(img)
+        recon_error = F.mse_loss(reconstruction, img)
+        loss = recon_error + loss
 
         y_pred.append(float(loss))
         y_true.append(int(data['label']))
@@ -134,3 +144,18 @@ class Engine:
     plot_roc_curve(fpr, tpr)
 
     print(f'ROC AUC score: {roc_auc_score(y_true, norm_pred)}')
+
+  def segmentation_performance_computation(self, model, testloader, testset):
+    counter = 0
+    for i, data in tqdm(enumerate(testloader), total=len(testset)):
+      counter += 1
+      img = data['image']
+      img = img.to(self.device)
+      reconstruction, _, _ = model(img)
+
+      # if loss > threshold:
+      diff = ImageDifference(img, reconstruction).difference()
+      elaborated = ImageElaboration(diff)
+      elaborated.keep_only(RGB.RED)
+      elaborated.negative()
+      build_segmentation_plot(img, reconstruction, diff, elaborated.get(), counter)

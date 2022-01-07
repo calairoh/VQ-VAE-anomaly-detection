@@ -1,6 +1,8 @@
+import os
 import imageio
 import torch
 import numpy as np
+import torch.distributed as dist
 import torchvision.transforms as transforms
 import matplotlib.pyplot as plt
 from torchvision.utils import save_image
@@ -89,7 +91,7 @@ def build_segmentation_plot(original, reconstruction, diff, elaborated, count):
 
 def plot_roc_curve(fpr, tpr):
     plt.subplots(1, figsize=(10, 10))
-    plt.title('Receiver Operating Characteristic - DecisionTree')
+    plt.title('Receiver Operating Characteristic Curve')
     plt.plot(fpr, tpr)
     plt.plot([0, 1], ls="--")
     plt.plot([0, 0], [1, 0], c=".7"), plt.plot([1, 1], c=".7")
@@ -98,3 +100,10 @@ def plot_roc_curve(fpr, tpr):
     plt.show()
 
     plt.savefig(f'./outputs/images/roc_auc.jpg')
+
+def setup(rank, world_size):
+    os.environ['MASTER_ADDR'] = 'localhost'
+    os.environ['MASTER_PORT'] = '12355'
+
+    # initialize the process group
+    dist.init_process_group("gloo", rank=rank, world_size=world_size)

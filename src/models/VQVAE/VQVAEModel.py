@@ -29,7 +29,7 @@ class VQVAEModel(nn.Module):
         loss, quantized, perplexity, _ = self._vq_vae(z)
         x_recon = self._decoder(quantized)
 
-        return x_recon, 0, 0
+        return x_recon, loss, perplexity
 
 class Decoder(nn.Module):
     def __init__(self, in_channels, num_hiddens, num_residual_layers, num_residual_hiddens):
