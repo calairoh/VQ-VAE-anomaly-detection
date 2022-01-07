@@ -11,6 +11,7 @@ import torch.distributed as dist
 import torch.multiprocessing as mp
 
 from data import DatasetGenerator
+from ddp import get_distributed_model, setup_ddp
 from engine.Engine import Engine
 from models.CAE.CAEEngine import CAEEngine
 from models.CAE.ConvAE import ConvAE
@@ -79,7 +80,7 @@ MODEL TRAINING
 
 num_training_updates = 15000
 
-num_hiddens = 256
+num_hiddens = 128
 num_residual_hiddens = 32
 num_residual_layers = 2
 
@@ -101,7 +102,11 @@ scheduler = ExponentialLR(optimizer, gamma=0.99)
 compute_loss = lambda a, b, c : a
 input_shape = (3, img_width, img_height)
 
-ddp_model = torch.nn.DataParallel(model)
+"""
+DDP
+"""
+setup_ddp()
+ddp_model = get_distributed_model(model)
 
 engine = Engine(model=ddp_model,
                 trainloader=trainloader,
