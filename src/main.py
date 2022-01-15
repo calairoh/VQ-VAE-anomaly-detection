@@ -1,4 +1,5 @@
 import matplotlib
+import time
 import os
 import matplotlib.pyplot as plt
 import torch
@@ -55,7 +56,7 @@ stride_face_gen = 1
 padding_face_gen = 0
 
 # TRAINING
-epochs = 10
+epochs = 1
 
 transform = transforms.Compose([
     transforms.Resize((img_height, img_width)),
@@ -70,9 +71,9 @@ DATASET GENERATION
 plant = 'cherry'
 plantVillageTrain, plantVillageVal, plantVillageTest = DatasetGenerator.generateDataset(plant, transform)
 
-trainloader = get_training_dataloader(plantVillageTrain, batch_size)
-validationloader = get_validation_dataloader(plantVillageVal, batch_size=1)
-testloader = get_test_dataloader(plantVillageTest, batch_size=1)
+trainloader = get_training_dataloader(plantVillageTrain, batch_size, num_workers=0)
+validationloader = get_validation_dataloader(plantVillageVal, batch_size=1, num_workers=0)
+testloader = get_test_dataloader(plantVillageTest, batch_size=1, num_workers=0)
 
 """
 MODEL TRAINING
@@ -107,6 +108,8 @@ DDP
 """
 setup_ddp()
 ddp_model = get_distributed_model(model)
+print(torch.get_num_threads())
+print(torch.distributed.get_backend(group=None))
 
 engine = Engine(model=ddp_model,
                 trainloader=trainloader,
@@ -121,7 +124,10 @@ engine = Engine(model=ddp_model,
                 device=device)
 
 if TRAIN:
+    start = time.time()
     model, best_epoch = engine.start()
+    total_time = time.time() - start
+    print('Total time: {}'.format(total_time))
 
     if LOAD_BEST_MODEL:
         print('Loading epoch #{}'.format(best_epoch))
