@@ -9,6 +9,7 @@ from torch.optim.lr_scheduler import ExponentialLR
 from torch.nn.parallel import DistributedDataParallel as DDP
 import torch.distributed as dist
 import torch.multiprocessing as mp
+import AADL
 
 from data import DatasetGenerator
 from engine.Engine import Engine
@@ -96,14 +97,26 @@ learning_rate = 1e-3
 model = VQVAEModel(num_hiddens, num_residual_layers, num_residual_hiddens,
     num_embeddings, embedding_dim, commitment_cost, decay).to(device)
 criterion = nn.MSELoss(reduction='sum')
-optimizer = opt.Adam(model.parameters(), lr=learning_rate, amsgrad=False)
-scheduler = ExponentialLR(optimizer, gamma=0.99)
 compute_loss = lambda a, b, c : a
 input_shape = (3, img_width, img_height)
 
-ddp_model = torch.nn.DataParallel(model)
+# Definition of the stochastic optimizer used to train the model
+optimizer = torch.optim.SGD(model.parameters(), lr=1e-3, momentum=0.9, nesterov = True)
 
-engine = Engine(model=ddp_model,
+# Parameters for Anderson acceleration
+relaxation = 0.5
+wait_iterations = 0
+history_depth = 10
+store_each_nth = 10
+frequency = store_each_nth
+reg_acc = 0.0
+safeguard = True
+average = True
+
+# Over-writing of the torch.optim.step() method 
+AADL.accelerate(optimizer, "anderson", relaxation, wait_iterations, history_depth, store_each_nth, frequency, reg_acc, average)
+
+engine = Engine(model=model,
                 trainloader=trainloader,
                 trainset=plantVillageTrain,
                 testloader=validationloader,
