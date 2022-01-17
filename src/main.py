@@ -55,7 +55,7 @@ stride_face_gen = 1
 padding_face_gen = 0
 
 # TRAINING
-epochs = 10
+epochs = 70
 
 transform = transforms.Compose([
     transforms.Resize((img_height, img_width)),
@@ -67,7 +67,7 @@ transform = transforms.Compose([
 DATASET GENERATION
 """
 
-plant = 'cherry'
+plant = 'pepper'
 plantVillageTrain, plantVillageVal, plantVillageTest = DatasetGenerator.generateDataset(plant, transform)
 
 trainloader = get_training_dataloader(plantVillageTrain, batch_size)
@@ -101,16 +101,15 @@ compute_loss = lambda a, b, c : a
 input_shape = (3, img_width, img_height)
 
 # Definition of the stochastic optimizer used to train the model
-optimizer = torch.optim.SGD(model.parameters(), lr=1e-3, momentum=0.9, nesterov = True)
+optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
 
 # Parameters for Anderson acceleration
 relaxation = 0.5
 wait_iterations = 0
-history_depth = 10
-store_each_nth = 10
+history_depth = 20
+store_each_nth = 5
 frequency = store_each_nth
 reg_acc = 0.0
-safeguard = True
 average = True
 
 # Over-writing of the torch.optim.step() method 

@@ -20,6 +20,8 @@ class TrainingInfo:
     if epoch_info.valid_epoch_loss < self.best_val_loss:
       self.best_val_loss = epoch_info.valid_epoch_loss
       self.best_epoch = epoch_info.epoch + 1
+    self.train_loss.append(epoch_info.train_epoch_loss)
+    self.valid_loss.append(epoch_info.valid_epoch_loss)
     
   def save_validation_gif_results(self):
     # save the reconstructions as a .gif file
