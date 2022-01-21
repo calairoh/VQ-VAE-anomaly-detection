@@ -37,7 +37,8 @@ SETTINGS
 """
 TRAIN = True
 LOAD_BEST_MODEL = True
-PARAMS_TO_LOAD = 9
+PARAMS_TO_LOAD = 30
+starting_point = 0
 
 """
 PARAMETERS
@@ -55,7 +56,7 @@ stride_face_gen = 1
 padding_face_gen = 0
 
 # TRAINING
-epochs = 70
+epochs = 50
 
 transform = transforms.Compose([
     transforms.Resize((img_height, img_width)),
@@ -67,7 +68,7 @@ transform = transforms.Compose([
 DATASET GENERATION
 """
 
-plant = 'pepper'
+plant = 'cherry'
 plantVillageTrain, plantVillageVal, plantVillageTest = DatasetGenerator.generateDataset(plant, transform)
 
 trainloader = get_training_dataloader(plantVillageTrain, batch_size)
@@ -128,6 +129,8 @@ engine = Engine(model=model,
                 device=device)
 
 if TRAIN:
+    if starting_point:
+        load_model(model, starting_point)
     model, best_epoch = engine.start()
 
     if LOAD_BEST_MODEL:
