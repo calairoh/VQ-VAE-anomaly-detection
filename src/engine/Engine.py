@@ -4,6 +4,7 @@ import numpy as np
 from tqdm import tqdm
 from torchsummary import summary
 import torch.nn.functional as F
+from torchvision import transforms
 
 from image.ImageDifference import ImageDifference
 from image.ImageElaboration import ImageElaboration
@@ -13,7 +14,7 @@ from helpers.EpochInfo import EpochInfo
 from helpers.TrainingInfo import TrainingInfo
 from helpers.PlotManager import PlotManager
 
-from utils import plot_roc_curve, build_segmentation_plot
+from utils import plot_roc_curve, build_segmentation_plot, save_image
 from sklearn.metrics import roc_curve, roc_auc_score
 
 class Engine:
@@ -104,7 +105,7 @@ class Engine:
         counter += 1
         data = data['image']
         data = data.to(self.device)
-        reconstruction, loss, _ = self.model(data)
+        reconstruction, loss, perplexity = self.model(data)
         #bce_loss = self.criterion(reconstruction, data)
         #loss = self.compute_loss(bce_loss, mu, logvar)
         recon_error = F.mse_loss(reconstruction, data)
@@ -128,7 +129,7 @@ class Engine:
     for i, data in tqdm(enumerate(testloader), total=len(testset)):
         img = data['image']
         img = img.to(self.device)
-        reconstruction, loss, _ = self.model(img)
+        reconstruction, loss, perplexity = self.model(img)
         recon_error = F.mse_loss(reconstruction, img)
         loss = recon_error + loss
 
@@ -150,6 +151,7 @@ class Engine:
     for i, data in tqdm(enumerate(testloader), total=len(testset)):
       counter += 1
       img = data['image']
+      label = data['label']
       img = img.to(self.device)
       reconstruction, _, _ = model(img)
 
@@ -158,4 +160,25 @@ class Engine:
       elaborated = ImageElaboration(diff)
       elaborated.keep_only(RGB.RED)
       elaborated.negative()
-      build_segmentation_plot(img, reconstruction, diff, elaborated.get(), counter)
+      build_segmentation_plot(img, reconstruction, diff, elaborated.get(), counter, reconstruction, label)
+
+      save_image(reconstruction.cpu(), f"./outputs/test/reconstructed-{i}.jpg")
+      save_image(img.cpu(), f"./outputs/test/original-{i}.jpg")
+
+      convert_tensor = transforms.ToTensor()
+
+      save_image(convert_tensor(elaborated.get()), f"./outputs/test/elaborated-{i}.jpg")
+
+  @staticmethod
+  def final_loss(bce_loss, mu, logvar):
+      """
+      This function will add the reconstruction loss (BCELoss) and the
+      KL-Divergence.
+      KL-Divergence = 0.5 * sum(1 + log(sigma^2) - mu^2 - sigma^2)
+      :param bce_loss: reconstruction loss
+      :param mu: the mean from the latent vector
+      :param logvar: log variance from the latent vector
+      """
+      bce = bce_loss
+      kld = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
+      return bce + kld

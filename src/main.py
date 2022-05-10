@@ -56,7 +56,7 @@ stride_face_gen = 1
 padding_face_gen = 0
 
 # TRAINING
-epochs = 50
+epochs = 200
 
 transform = transforms.Compose([
     transforms.Resize((img_height, img_width)),
@@ -68,7 +68,7 @@ transform = transforms.Compose([
 DATASET GENERATION
 """
 
-plant = 'cherry'
+plant = 'pepper'
 plantVillageTrain, plantVillageVal, plantVillageTest = DatasetGenerator.generateDataset(plant, transform)
 
 trainloader = get_training_dataloader(plantVillageTrain, batch_size)
@@ -97,6 +97,7 @@ learning_rate = 1e-3
 # initialize the model
 model = VQVAEModel(num_hiddens, num_residual_layers, num_residual_hiddens,
     num_embeddings, embedding_dim, commitment_cost, decay).to(device)
+#model = VQVAEModel().to(device)
 criterion = nn.MSELoss(reduction='sum')
 compute_loss = lambda a, b, c : a
 input_shape = (3, img_width, img_height)
@@ -114,7 +115,7 @@ reg_acc = 0.0
 average = True
 
 # Over-writing of the torch.optim.step() method 
-AADL.accelerate(optimizer, "anderson", relaxation, wait_iterations, history_depth, store_each_nth, frequency, reg_acc, average)
+#AADL.accelerate(optimizer, "anderson", relaxation, wait_iterations, history_depth, store_each_nth, frequency, reg_acc, average)
 
 engine = Engine(model=model,
                 trainloader=trainloader,

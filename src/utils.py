@@ -55,34 +55,34 @@ def load_model(model, epoch):
     return model
 
 
-def build_segmentation_plot(original, reconstruction, diff, elaborated, count):
+def build_segmentation_plot(original, reconstruction, diff, elaborated, count, loss, label):
     plt.figure()
 
     # ORIGINAL
     ax = plt.subplot(1, 4, 1)
     plt.tight_layout()
-    ax.set_title('Original')
+    #ax.set_title('Original {}'.format(label.item()))
     ax.axis('off')
     plt.imshow(np.transpose(np.squeeze(original), (1, 2, 0)))
 
     # RECONSTRUCTION
     ax = plt.subplot(1, 4, 2)
     plt.tight_layout()
-    ax.set_title('Reconstructed')
+    #ax.set_title('Reconstructed')
     ax.axis('off')
     plt.imshow(np.transpose(np.squeeze(reconstruction.detach().numpy()), (1, 2, 0)))
 
     # RAW DIFFERENCE
     ax = plt.subplot(1, 4, 3)
     plt.tight_layout()
-    ax.set_title('Raw Diff')
+    #ax.set_title('Raw Diff')
     ax.axis('off')
     plt.imshow(diff)
 
     # FINAL SEGMENTATION RESULT
     ax = plt.subplot(1, 4, 4)
     plt.tight_layout()
-    ax.set_title('Result')
+    #ax.set_title('Result')
     ax.axis('off')
     plt.imshow(elaborated)
 
